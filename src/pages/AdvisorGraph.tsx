@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Briefcase, Users, MapPin, Plus, X, ChevronDown, ChevronUp, Trash2, Phone, Mail } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
 
 const card = { background: "#132A1A", border: "1px solid rgba(212,197,169,0.12)" };
 const input = { background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(212,197,169,0.15)" };
@@ -11,20 +12,22 @@ interface Advisor {
 }
 
 const CATEGORIES = ["Investment Bank", "Boutique IB", "Big 4 / Accounting", "Law Firm", "Lender / Debt", "Operating Partner", "Other"];
-const STORAGE_KEY = "stc_advisors";
 
-function load(): Advisor[] {
-  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : []; } catch { return []; }
+function storageKey(userId: string) { return `stc_advisors_${userId}`; }
+function load(userId: string): Advisor[] {
+  try { const r = localStorage.getItem(storageKey(userId)); return r ? JSON.parse(r) : []; } catch { return []; }
 }
-function save(advisors: Advisor[]) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(advisors)); } catch {}
+function save(advisors: Advisor[], userId: string) {
+  try { localStorage.setItem(storageKey(userId), JSON.stringify(advisors)); } catch {}
 }
 
 const emptyAdvisor = () => ({ id: "", name: "", category: CATEGORIES[0], specialty: "", location: "", notes: "", contacts: [], added: "" });
 const emptyContact = (): Contact => ({ name: "", role: "", email: "", phone: "" });
 
 export default function AdvisorGraph() {
-  const [advisors, setAdvisors] = useState<Advisor[]>(load);
+  const { user } = useAuth();
+  const userId = user?.id || "default";
+  const [advisors, setAdvisors] = useState<Advisor[]>(() => load(userId));
   const [filter, setFilter] = useState("All");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -35,7 +38,7 @@ export default function AdvisorGraph() {
   const categories = ["All", ...CATEGORIES];
   const filtered = advisors.filter(a => filter === "All" || a.category === filter);
 
-  function persist(next: Advisor[]) { setAdvisors(next); save(next); }
+  function persist(next: Advisor[]) { setAdvisors(next); save(next, userId); }
 
   function addAdvisor() {
     if (!form.name.trim()) return;

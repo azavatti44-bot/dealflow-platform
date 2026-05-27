@@ -1,4 +1,5 @@
 import { fetchProxied } from "./api";
+import { getSession } from "./auth";
 
 export interface Alert {
   id: string;
@@ -10,19 +11,21 @@ export interface Alert {
   link?: string;
 }
 
-const ALERTS_KEY = "stc_alerts";
-const MONITORED_KEY = "stc_monitored";
-const LAST_CHECK_KEY = "stc_last_check";
+// All keys are scoped by the current user's ID so alerts/monitored lists are private
+function uid(): string { return getSession()?.id || "default"; }
+const ALERTS_KEY    = () => `stc_alerts_${uid()}`;
+const MONITORED_KEY = () => `stc_monitored_${uid()}`;
+const LAST_CHECK_KEY = () => `stc_last_check_${uid()}`;
 
 export function getAlerts(): Alert[] {
   try {
-    const raw = localStorage.getItem(ALERTS_KEY);
+    const raw = localStorage.getItem(ALERTS_KEY());
     return raw ? (JSON.parse(raw) as Alert[]) : [];
   } catch { return []; }
 }
 
 function saveAlerts(alerts: Alert[]): void {
-  try { localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts)); } catch { /* quota */ }
+  try { localStorage.setItem(ALERTS_KEY(), JSON.stringify(alerts)); } catch { /* quota */ }
 }
 
 export function markRead(id: string): void {
@@ -64,7 +67,7 @@ export function getUnreadCount(): number {
 
 export function getMonitored(): string[] {
   try {
-    const raw = localStorage.getItem(MONITORED_KEY);
+    const raw = localStorage.getItem(MONITORED_KEY());
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch { return []; }
 }
@@ -72,21 +75,21 @@ export function getMonitored(): string[] {
 export function addMonitored(name: string): void {
   const list = getMonitored();
   if (!list.includes(name)) {
-    try { localStorage.setItem(MONITORED_KEY, JSON.stringify([...list, name])); } catch { /* quota */ }
+    try { localStorage.setItem(MONITORED_KEY(), JSON.stringify([...list, name])); } catch { /* quota */ }
   }
 }
 
 export function removeMonitored(name: string): void {
   const list = getMonitored().filter(n => n !== name);
-  try { localStorage.setItem(MONITORED_KEY, JSON.stringify(list)); } catch { /* quota */ }
+  try { localStorage.setItem(MONITORED_KEY(), JSON.stringify(list)); } catch { /* quota */ }
 }
 
 function getLastCheck(): string {
-  return localStorage.getItem(LAST_CHECK_KEY) || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return localStorage.getItem(LAST_CHECK_KEY()) || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
 function setLastCheck(): void {
-  try { localStorage.setItem(LAST_CHECK_KEY, new Date().toISOString().slice(0, 10)); } catch { /* quota */ }
+  try { localStorage.setItem(LAST_CHECK_KEY(), new Date().toISOString().slice(0, 10)); } catch { /* quota */ }
 }
 
 function getAlertKey(company: string, accession: string): string {
@@ -115,8 +118,8 @@ export async function checkForNewFilings(): Promise<void> {
 
         for (const h of hits) {
           const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
-          const accession = String(src.accession_no || "");
-          const formType = String(src.form_type || "");
+          const accession = String(src.adsh || "");
+          const formType = String(src.form || "");
           const fileDate = String(src.file_date || "");
 
           if (!accession || isAlertDuplicate(company, accession)) continue;
