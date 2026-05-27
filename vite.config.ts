@@ -12,6 +12,7 @@ export default defineConfig({
     proxy: {
       "/sec-files": { target: "https://www.sec.gov", changeOrigin: true, rewrite: (p) => p.replace(/^\/sec-files/, "/files") },
       "/sec-arch": { target: "https://www.sec.gov", changeOrigin: true, rewrite: (p) => p.replace(/^\/sec-arch/, "/Archives") },
+      "/npi-api": { target: "https://npiregistry.cms.hhs.gov", changeOrigin: true, rewrite: (p) => p.replace(/^\/npi-api/, "") },
     },
   },
   resolve: {

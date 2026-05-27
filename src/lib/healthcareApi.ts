@@ -223,43 +223,79 @@ export const SPECIALTY_BENCHMARKS: Record<string, SpecialtyBenchmark> = {
 // ---------------------------------------------------------------------------
 // CORS proxy fallback chain
 // ---------------------------------------------------------------------------
-const CORS_PROXIES = [
+
+// Proxies that return the raw response body directly
+const RAW_PROXIES = [
+  (url: string) => `https://corsproxy.io/?${url}`,
   (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
 ];
 
-async function fetchWithCorsFallback(url: string, ms = 15000): Promise<Response> {
+// Proxies that return JSON { contents: "..." }
+const JSON_PROXIES = [
+  (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+];
+
+async function fetchWithTimeout(
+  target: string | Request | URL,
+  ms: number,
+): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), ms);
-
-  // Try direct first (works in some production deployments)
   try {
-    const res = await fetch(url, { signal: controller.signal });
-    if (res.ok) {
-      clearTimeout(id);
-      return res;
-    }
+    const res = await fetch(target, { signal: controller.signal });
+    return res;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
+const IS_LOCAL =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+function getNpiUrl(pathAndQuery: string): string {
+  // Use Vite dev proxy on localhost to avoid CORS entirely
+  if (IS_LOCAL) return `/npi-api${pathAndQuery}`;
+  return `https://npiregistry.cms.hhs.gov${pathAndQuery}`;
+}
+
+async function fetchWithCorsFallback(url: string, ms = 15000): Promise<Response> {
+  // 1. Try direct fetch first (works if the API sends CORS headers, dev proxy, or browser extension)
+  try {
+    const res = await fetchWithTimeout(url, ms);
+    if (res.ok) return res;
   } catch {
-    // expected from localhost
+    // expected when CORS is blocked
   }
 
-  // Try each proxy
-  const proxyErrors: string[] = [];
-  for (const makeProxyUrl of CORS_PROXIES) {
+  // 2. Try raw-response proxies
+  for (const makeProxyUrl of RAW_PROXIES) {
     try {
-      const proxyController = new AbortController();
-      const proxyId = setTimeout(() => proxyController.abort(), ms);
-      const res = await fetch(makeProxyUrl(url), { signal: proxyController.signal });
-      clearTimeout(proxyId);
+      const res = await fetchWithTimeout(makeProxyUrl(url), ms);
       if (res.ok) return res;
-    } catch (e: any) {
-      proxyErrors.push(e.message || "unknown");
+    } catch {
+      // try next proxy
     }
   }
 
-  clearTimeout(id);
+  // 3. Try JSON-wrapped proxies (returns { contents: "..." })
+  for (const makeProxyUrl of JSON_PROXIES) {
+    try {
+      const res = await fetchWithTimeout(makeProxyUrl(url), ms);
+      if (!res.ok) continue;
+      const data = await res.json();
+      const contents = typeof data?.contents === "string" ? data.contents : "";
+      if (!contents) continue;
+      // Re-create a Response so the rest of the code doesn't need to change
+      return new Response(contents, { status: 200, headers: { "Content-Type": "application/json" } });
+    } catch {
+      // try next proxy
+    }
+  }
+
   throw new Error(
-    `NPI Registry unreachable — all CORS proxies failed. Try using a VPN or mobile hotspot.`
+    `NPI Registry unreachable — all CORS proxies failed. This usually happens because free public CORS proxies block or rate-limit requests from deployed sites. For a production app, use a backend proxy or serverless function.`
   );
 }
 
@@ -510,7 +546,7 @@ export async function searchHealthcareProviders(opts: {
   const skip = opts.skip || 0;
 
   let url =
-    `https://npiregistry.cms.hhs.gov/api/?version=2.1` +
+    getNpiUrl(`/api/?version=2.1`) +
     `&limit=${limit}` +
     `&skip=${skip}`;
 
