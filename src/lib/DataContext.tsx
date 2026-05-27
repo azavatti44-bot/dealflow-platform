@@ -18,11 +18,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [companies, setCompanies] = useState<CompanyResult[]>(() => {
     try { const r = localStorage.getItem("stc_companies"); return r ? JSON.parse(r) : []; } catch { return []; }
   });
-  const [watchlists, setWatchlists] = useState<Watchlist[]>([
-    { id: "1", name: "Insurance Distribution", companies: [], created: "2026-05-01" },
-    { id: "2", name: "PE-Backed Services", companies: [], created: "2026-05-10" },
-    { id: "3", name: "Founder Transition Ready", companies: [], created: "2026-05-15" },
-  ]);
+  const [watchlists, setWatchlists] = useState<Watchlist[]>(() => {
+    try {
+      const r = localStorage.getItem("stc_watchlists");
+      if (r) return JSON.parse(r);
+    } catch {}
+    return [
+      { id: "1", name: "Insurance Distribution", companies: [], created: "2026-05-01" },
+      { id: "2", name: "PE-Backed Services", companies: [], created: "2026-05-10" },
+      { id: "3", name: "Founder Transition Ready", companies: [], created: "2026-05-15" },
+    ];
+  });
   const [selectedCompany, setSelected] = useState<CompanyResult | null>(null);
 
   const addCompany = useCallback((c: CompanyResult) => {
@@ -34,7 +40,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleWatchlist = useCallback((name: string, wid: string) => {
-    setWatchlists(prev => prev.map(w => w.id === wid ? { ...w, companies: w.companies.includes(name) ? w.companies.filter(c => c !== name) : [...w.companies, name] } : w));
+    setWatchlists(prev => {
+      const next = prev.map(w => w.id === wid ? { ...w, companies: w.companies.includes(name) ? w.companies.filter(c => c !== name) : [...w.companies, name] } : w);
+      try { localStorage.setItem("stc_watchlists", JSON.stringify(next)); } catch {}
+      return next;
+    });
   }, []);
 
   return (

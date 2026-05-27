@@ -119,7 +119,7 @@ app.use(
 app.use(express.static(path.join(__dirname, "dist")));
 
 // SPA fallback — serve index.html for all non-API routes
-app.get("*", (req, res) => {
+app.use((req, res) => {
   if (req.path.startsWith("/api/")) {
     return res.status(404).json({ error: "API route not found" });
   }
