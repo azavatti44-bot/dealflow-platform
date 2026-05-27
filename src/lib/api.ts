@@ -261,26 +261,27 @@ export async function searchFormDByCompany(name: string): Promise<FormDRecord[]>
     const hits: unknown[] = data?.hits?.hits || [];
     return hits.slice(0, 10).map((h: unknown) => {
       const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
-      const biz = src.biz_location as Record<string, unknown> || {};
       return {
-        company_name: String(src.entity_name || ""),
+        company_name: extractEntityName(src),
         cik: Array.isArray(src.ciks) && src.ciks.length ? String(src.ciks[0]) : "",
-        state: String(biz.stateOrCountry || ""),
+        state: Array.isArray(src.biz_states) && src.biz_states.length ? String(src.biz_states[0]) : "",
         date_filed: String(src.file_date || ""),
-        form_type: String(src.form_type || "D"),
-        accession_no: String(src.accession_no || ""),
+        form_type: String(src.form || "D"),
+        accession_no: String(src.adsh || ""),
       };
     });
   } catch { return []; }
 }
 
-// EDGAR EFTS returns entity names in display_names:[{name,entity_id}] — fall back to entity_name string
+// EDGAR EFTS returns entity names as display_names: string[] e.g. "Acme Corp  (ACME)  (CIK 0001234567)"
 function extractEntityName(src: Record<string, unknown>): string {
   if (Array.isArray(src.display_names) && src.display_names.length > 0) {
-    const first = src.display_names[0] as Record<string, unknown>;
-    if (first?.name) return String(first.name);
+    return String(src.display_names[0])
+      .replace(/\s*\([A-Z0-9.]+\)\s*\(CIK\s*\d+\)\s*$/, "")  // strip "(TICKER) (CIK XXXXXXXXXX)"
+      .replace(/\s*\(CIK\s*\d+\)\s*$/, "")                    // strip just "(CIK XXXXXXXXXX)"
+      .trim();
   }
-  return String(src.entity_name || "");
+  return "";
 }
 
 export async function browseFormD(opts: { state?: string; query?: string; startDate?: string; from?: number; minAmount?: number; maxAmount?: number }): Promise<{ total: number; results: FormDRecord[] }> {
@@ -291,23 +292,17 @@ export async function browseFormD(opts: { state?: string; query?: string; startD
     const data = await fetchProxied(url);
     const total: number = data?.hits?.total?.value || 0;
     const hits: unknown[] = data?.hits?.hits || [];
-    let results = hits.slice(0, 20).map((h: unknown) => {
+    const results = hits.slice(0, 20).map((h: unknown) => {
       const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
-      const biz = src.biz_location as Record<string, unknown> || {};
-      const rawAmount = Number(src.total_offering_amount ?? src.totalOfferingAmount ?? 0);
       return {
         company_name: extractEntityName(src),
         cik: Array.isArray(src.ciks) && src.ciks.length ? String(src.ciks[0]) : "",
-        state: String(biz.stateOrCountry || biz.stateOrCountryDescription || ""),
+        state: Array.isArray(src.biz_states) && src.biz_states.length ? String(src.biz_states[0]) : "",
         date_filed: String(src.file_date || ""),
-        form_type: String(src.form_type || "D"),
-        accession_no: String(src.accession_no || ""),
-        amount_raised: rawAmount > 0 ? rawAmount : undefined,
-        industry: String(src.industry_category_description || src.industryCategoryDescription || ""),
+        form_type: String(src.form || "D"),
+        accession_no: String(src.adsh || ""),
       };
     });
-    if (opts.minAmount != null) results = results.filter(r => (r.amount_raised ?? 0) >= opts.minAmount!);
-    if (opts.maxAmount != null) results = results.filter(r => r.amount_raised == null || r.amount_raised <= opts.maxAmount!);
     return { total, results };
   } catch { return { total: 0, results: [] }; }
 }
@@ -323,9 +318,9 @@ export async function searchEDGARText(query: string, opts?: { forms?: string; st
       const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
       return {
         entity_name: extractEntityName(src),
-        form_type: String(src.form_type || ""),
+        form_type: String(src.form || ""),
         file_date: String(src.file_date || ""),
-        accession_no: String(src.accession_no || ""),
+        accession_no: String(src.adsh || ""),
       };
     });
     return { total, results };
@@ -374,12 +369,13 @@ export async function searchComps(sector: string): Promise<CompTransaction[]> {
     const hits: unknown[] = data?.hits?.hits || [];
     return hits.slice(0, 15).map((h: unknown) => {
       const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
+      const name = extractEntityName(src);
       return {
-        target: String(src.entity_name || ""),
+        target: name,
         date_filed: String(src.file_date || ""),
-        form_type: String(src.form_type || "S-4"),
-        accession_no: String(src.accession_no || ""),
-        entity_name: String(src.entity_name || ""),
+        form_type: String(src.form || "S-4"),
+        accession_no: String(src.adsh || ""),
+        entity_name: name,
       };
     });
   } catch { return []; }
@@ -392,13 +388,12 @@ export async function searchAdvisors(query: string): Promise<AdvisorRecord[]> {
     const hits: unknown[] = data?.hits?.hits || [];
     return hits.slice(0, 10).map((h: unknown) => {
       const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
-      const biz = src.biz_location as Record<string, unknown> || {};
       return {
-        firm_name: String(src.entity_name || ""),
+        firm_name: extractEntityName(src),
         cik: Array.isArray(src.ciks) && src.ciks.length ? String(src.ciks[0]) : "",
-        state: String(biz.stateOrCountry || ""),
+        state: Array.isArray(src.biz_states) && src.biz_states.length ? String(src.biz_states[0]) : "",
         date_filed: String(src.file_date || ""),
-        accession_no: String(src.accession_no || ""),
+        accession_no: String(src.adsh || ""),
       };
     });
   } catch { return []; }
