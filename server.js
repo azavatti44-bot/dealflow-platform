@@ -31,6 +31,11 @@ app.use(
     target: "https://efts.sec.gov",
     changeOrigin: true,
     pathRewrite: { "^/api/efts": "" },
+    on: {
+      proxyReq: (proxyReq) => {
+        proxyReq.setHeader("User-Agent", "DealflowPlatform/1.0 admin@saintthomascapital.com");
+      },
+    },
   })
 );
 

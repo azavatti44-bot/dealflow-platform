@@ -274,9 +274,18 @@ export async function searchFormDByCompany(name: string): Promise<FormDRecord[]>
   } catch { return []; }
 }
 
+// EDGAR EFTS returns entity names in display_names:[{name,entity_id}] — fall back to entity_name string
+function extractEntityName(src: Record<string, unknown>): string {
+  if (Array.isArray(src.display_names) && src.display_names.length > 0) {
+    const first = src.display_names[0] as Record<string, unknown>;
+    if (first?.name) return String(first.name);
+  }
+  return String(src.entity_name || "");
+}
+
 export async function browseFormD(opts: { state?: string; query?: string; startDate?: string; from?: number; minAmount?: number; maxAmount?: number }): Promise<{ total: number; results: FormDRecord[] }> {
   try {
-    let url = `/api/efts/LATEST/search-index?forms=D,D%2FA&dateRange=custom&startdt=${opts.startDate || "2020-01-01"}&from=${opts.from || 0}`;
+    let url = `/api/efts/LATEST/search-index?forms=D&dateRange=custom&startdt=${opts.startDate || "2020-01-01"}&from=${opts.from || 0}`;
     if (opts.query) url += `&q=${encodeURIComponent(opts.query)}`;
     if (opts.state) url += `&locationCode=${opts.state}`;
     const data = await fetchProxied(url);
@@ -287,7 +296,7 @@ export async function browseFormD(opts: { state?: string; query?: string; startD
       const biz = src.biz_location as Record<string, unknown> || {};
       const rawAmount = Number(src.total_offering_amount ?? src.totalOfferingAmount ?? 0);
       return {
-        company_name: String(src.entity_name || ""),
+        company_name: extractEntityName(src),
         cik: Array.isArray(src.ciks) && src.ciks.length ? String(src.ciks[0]) : "",
         state: String(biz.stateOrCountry || biz.stateOrCountryDescription || ""),
         date_filed: String(src.file_date || ""),
@@ -306,14 +315,14 @@ export async function browseFormD(opts: { state?: string; query?: string; startD
 export async function searchEDGARText(query: string, opts?: { forms?: string; startDate?: string; from?: number }): Promise<{ total: number; results: EDGARTextHit[] }> {
   try {
     let url = `/api/efts/LATEST/search-index?q=${encodeURIComponent(query)}&dateRange=custom&startdt=${opts?.startDate || "2023-01-01"}&from=${opts?.from || 0}`;
-    if (opts?.forms) url += `&forms=${opts.forms}`;
+    if (opts?.forms) url += `&forms=${encodeURIComponent(opts.forms)}`;
     const data = await fetchProxied(url);
     const total: number = data?.hits?.total?.value || 0;
     const hits: unknown[] = data?.hits?.hits || [];
     const results = hits.map((h: unknown) => {
       const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
       return {
-        entity_name: String(src.entity_name || ""),
+        entity_name: extractEntityName(src),
         form_type: String(src.form_type || ""),
         file_date: String(src.file_date || ""),
         accession_no: String(src.accession_no || ""),
