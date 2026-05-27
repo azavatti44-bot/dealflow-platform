@@ -19,7 +19,6 @@ export default function App() {
     <ErrorBoundary>
       <DataProvider>
         <Routes>
-          <Route path="/healthcare" element={<HealthcareDealEngine />} />
           <Route element={<Layout />}>
             <Route path="/" element={<CommandCenter />} />
             <Route path="/deals" element={<DealFlow />} />
@@ -31,6 +30,7 @@ export default function App() {
             <Route path="/signals" element={<SignalLibrary />} />
             <Route path="/private-finder" element={<PrivateDealFinder />} />
             <Route path="/market-signals" element={<MarketSignalScanner />} />
+            <Route path="/healthcare" element={<HealthcareDealEngine />} />
           </Route>
         </Routes>
       </DataProvider>

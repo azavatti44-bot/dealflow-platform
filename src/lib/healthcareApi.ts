@@ -1,5 +1,5 @@
 // Healthcare Deal Engine — NPI Registry API module
-// NPI API is CORS-enabled, no key required
+// NPI API is NOT CORS-enabled from localhost; we chain public CORS proxies.
 
 export interface NPIProvider {
   npi: string;
@@ -50,6 +50,18 @@ export interface SpecialtyBenchmark {
 }
 
 export const SPECIALTY_BENCHMARKS: Record<string, SpecialtyBenchmark> = {
+  all: {
+    label: "All Specialties",
+    taxonomyQuery: "",
+    revenuePerProvider: 500000,
+    ebitdaMarginLow: 0.15,
+    ebitdaMarginHigh: 0.28,
+    multipleLow: 7,
+    multipleHigh: 11,
+    marketContext:
+      "Healthcare remains one of the most defensive, recession-resistant sectors with strong demographic tailwinds and ongoing PE consolidation across all verticals.",
+    icon: "⚕️",
+  },
   dermatology: {
     label: "Dermatology",
     taxonomyQuery: "Dermatology",
@@ -170,17 +182,90 @@ export const SPECIALTY_BENCHMARKS: Record<string, SpecialtyBenchmark> = {
       "Aging population creates secular volume growth — home health is the lowest-cost care setting and benefits from ongoing CMS site-of-care incentives.",
     icon: "🏠",
   },
+  ent: {
+    label: "Otolaryngology (ENT)",
+    taxonomyQuery: "Otolaryngology",
+    revenuePerProvider: 780000,
+    ebitdaMarginLow: 0.22,
+    ebitdaMarginHigh: 0.32,
+    multipleLow: 9,
+    multipleHigh: 13,
+    marketContext:
+      "ENT practices benefit from high-margin in-office procedures and strong ancillary revenue from allergy and audiology services.",
+    icon: "👂",
+  },
+  geriatric: {
+    label: "Geriatric Medicine",
+    taxonomyQuery: "Geriatric Medicine",
+    revenuePerProvider: 420000,
+    ebitdaMarginLow: 0.12,
+    ebitdaMarginHigh: 0.20,
+    multipleLow: 6,
+    multipleHigh: 9,
+    marketContext:
+      "Fastest-growing patient demographic with favorable Medicare reimbursement — ideal tuck-in for primary care platforms pursuing value-based contracts.",
+    icon: "🧓",
+  },
+  surgery: {
+    label: "Surgery",
+    taxonomyQuery: "Surgery",
+    revenuePerProvider: 950000,
+    ebitdaMarginLow: 0.22,
+    ebitdaMarginHigh: 0.35,
+    multipleLow: 9,
+    multipleHigh: 14,
+    marketContext:
+      "Surgical practices with ASC ownership trade at significant premiums — outpatient shift and payer preference for lower-cost settings drive demand.",
+    icon: "🪡",
+  },
 };
+
+// ---------------------------------------------------------------------------
+// CORS proxy fallback chain
+// ---------------------------------------------------------------------------
+const CORS_PROXIES = [
+  (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+];
+
+async function fetchWithCorsFallback(url: string, ms = 15000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), ms);
+
+  // Try direct first (works in some production deployments)
+  try {
+    const res = await fetch(url, { signal: controller.signal });
+    if (res.ok) {
+      clearTimeout(id);
+      return res;
+    }
+  } catch {
+    // expected from localhost
+  }
+
+  // Try each proxy
+  const proxyErrors: string[] = [];
+  for (const makeProxyUrl of CORS_PROXIES) {
+    try {
+      const proxyController = new AbortController();
+      const proxyId = setTimeout(() => proxyController.abort(), ms);
+      const res = await fetch(makeProxyUrl(url), { signal: proxyController.signal });
+      clearTimeout(proxyId);
+      if (res.ok) return res;
+    } catch (e: any) {
+      proxyErrors.push(e.message || "unknown");
+    }
+  }
+
+  clearTimeout(id);
+  throw new Error(
+    `NPI Registry unreachable — all CORS proxies failed. Try using a VPN or mobile hotspot.`
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
-
-function localFetchWithTimeout(url: string, ms = 15000): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), ms);
-  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
-}
 
 function estimateProviderCount(provider: NPIProvider): number {
   if (provider.enumType === "NPI-1") return 1;
@@ -198,6 +283,7 @@ const HIGH_VALUE_SPECIALTIES = new Set([
   "orthopedic",
   "medspa",
   "surgery",
+  "ent",
   "urgent_care",
 ]);
 
@@ -240,7 +326,7 @@ function calculateScore(
 }
 
 function generateThesis(
-  provider: NPIProvider,
+  _provider: NPIProvider,
   age: number,
   estimatedProviders: number,
   benchmark: SpecialtyBenchmark,
@@ -312,44 +398,13 @@ function generateSignals(
   return signals;
 }
 
-// ---------------------------------------------------------------------------
-// Main exported functions
-// ---------------------------------------------------------------------------
-
-export async function searchHealthcareProviders(opts: {
-  specialtyKey: string;
-  state: string;
-  city?: string;
-  limit?: number;
-  skip?: number;
-}): Promise<{ total: number; profiles: PracticeProfile[] }> {
-  const benchmark = SPECIALTY_BENCHMARKS[opts.specialtyKey];
-  if (!benchmark) throw new Error(`Unknown specialty key: ${opts.specialtyKey}`);
-
-  const limit = opts.limit || 25;
-  const skip = opts.skip || 0;
-
-  let url =
-    `https://npiregistry.cms.hhs.gov/api/?version=2.1` +
-    `&enumeration_type=NPI-2` +
-    `&taxonomy_description=${encodeURIComponent(benchmark.taxonomyQuery)}` +
-    `&state=${opts.state}` +
-    `&limit=${limit}` +
-    `&skip=${skip}`;
-
-  if (opts.city) {
-    url += `&city=${encodeURIComponent(opts.city)}`;
-  }
-
-  const res = await localFetchWithTimeout(url, 15000);
-  if (!res.ok) throw new Error(`NPI API error: ${res.status}`);
-
-  const data = await res.json();
-  const resultCount: number = data.result_count || 0;
-  const results: unknown[] = data.results || [];
-
+function buildProfilesFromResults(
+  results: unknown[],
+  benchmark: SpecialtyBenchmark,
+  specialtyKey: string,
+  fallbackState?: string,
+): PracticeProfile[] {
   const currentYear = new Date().getFullYear();
-
   const profiles: PracticeProfile[] = [];
 
   for (const result of results) {
@@ -386,128 +441,14 @@ export async function searchHealthcareProviders(opts: {
       taxonomyCode: String(taxonomy0.code || ""),
       address: String(locationAddr.address_1 || ""),
       city: String(locationAddr.city || ""),
-      state: String(locationAddr.state || opts.state),
+      state: String(locationAddr.state || fallbackState || ""),
       zip: String(locationAddr.postal_code || ""),
       phone: String(locationAddr.telephone_number || ""),
       contactName: `${String(basic.authorized_official_first_name || basic.first_name || "")} ${String(basic.authorized_official_last_name || basic.last_name || "")}`.trim(),
       contactTitle: String(basic.authorized_official_title_or_position || basic.credential || ""),
       foundingYear: createdEpoch > 0 ? new Date(createdEpoch * 1000).getFullYear() : 0,
       lastUpdated: lastUpdatedEpoch > 0 ? new Date(lastUpdatedEpoch * 1000).toISOString().slice(0, 10) : "",
-      licenseState: String(taxonomy0.state || opts.state),
-    };
-
-    const practiceAge = provider.foundingYear > 0 ? currentYear - provider.foundingYear : 0;
-    const estimatedProviders = estimateProviderCount(provider);
-
-    const revenueRangeLow = estimatedProviders * benchmark.revenuePerProvider * 0.75;
-    const revenueRangeHigh = estimatedProviders * benchmark.revenuePerProvider * 1.25;
-    const ebitdaRangeLow = revenueRangeLow * benchmark.ebitdaMarginLow;
-    const ebitdaRangeHigh = revenueRangeHigh * benchmark.ebitdaMarginHigh;
-
-    const acquisitionScore = calculateScore(provider, practiceAge, estimatedProviders, opts.specialtyKey);
-    const scoreLabel: PracticeProfile["scoreLabel"] =
-      acquisitionScore >= 80
-        ? "High Readiness"
-        : acquisitionScore >= 60
-        ? "Worth Watching"
-        : "Emerging";
-
-    profiles.push({
-      provider,
-      estimatedProviders,
-      revenueRangeLow,
-      revenueRangeHigh,
-      ebitdaRangeLow,
-      ebitdaRangeHigh,
-      impliedMultipleLow: benchmark.multipleLow,
-      impliedMultipleHigh: benchmark.multipleHigh,
-      acquisitionScore,
-      scoreLabel,
-      practiceAge,
-      thesis: generateThesis(provider, practiceAge, estimatedProviders, benchmark),
-      approachAngle: generateApproachAngle(practiceAge, estimatedProviders, opts.specialtyKey),
-      signals: generateSignals(provider, practiceAge, estimatedProviders),
-      specialtyKey: opts.specialtyKey,
-    });
-  }
-
-  profiles.sort((a, b) => b.acquisitionScore - a.acquisitionScore);
-
-  return { total: resultCount, profiles };
-}
-
-export async function searchByProviderName(
-  query: string,
-  opts: { state?: string; limit?: number; skip?: number } = {},
-): Promise<{ total: number; profiles: PracticeProfile[] }> {
-  const limit = opts.limit || 25;
-  const skip = opts.skip || 0;
-
-  let url =
-    `https://npiregistry.cms.hhs.gov/api/?version=2.1` +
-    `&enumeration_type=NPI-2` +
-    `&organization_name=${encodeURIComponent(query)}` +
-    `&limit=${limit}` +
-    `&skip=${skip}`;
-
-  if (opts.state) url += `&state=${opts.state}`;
-
-  const res = await localFetchWithTimeout(url, 15000);
-  if (!res.ok) throw new Error(`NPI API error: ${res.status}`);
-
-  const data = await res.json();
-  const resultCount: number = data.result_count || 0;
-  const results: unknown[] = data.results || [];
-  const currentYear = new Date().getFullYear();
-
-  // Use physician benchmark as default for name-based searches
-  const benchmark = SPECIALTY_BENCHMARKS["physician"];
-  const specialtyKey = "physician";
-
-  const profiles: PracticeProfile[] = [];
-
-  for (const result of results) {
-    const r = result as Record<string, unknown>;
-    const basic = (r.basic as Record<string, unknown>) || {};
-    const addresses: unknown[] = (r.addresses as unknown[]) || [];
-    const taxonomies: unknown[] = (r.taxonomies as unknown[]) || [];
-    const enumType = String(r.enumeration_type || "NPI-2") as "NPI-1" | "NPI-2";
-
-    const locationAddr =
-      (addresses.find((a) => {
-        const addr = a as Record<string, unknown>;
-        return addr.address_purpose === "LOCATION";
-      }) as Record<string, unknown>) ||
-      (addresses[0] as Record<string, unknown>) ||
-      {};
-
-    const taxonomy0 = (taxonomies[0] as Record<string, unknown>) || {};
-
-    const rawName =
-      String(basic.organization_name || "").trim() ||
-      `${String(basic.first_name || "")} ${String(basic.last_name || "")}`.trim();
-
-    if (!rawName) continue;
-
-    const createdEpoch = r.created_epoch ? Number(r.created_epoch) : 0;
-    const lastUpdatedEpoch = r.last_updated_epoch ? Number(r.last_updated_epoch) : 0;
-
-    const provider: NPIProvider = {
-      npi: String(r.number || ""),
-      name: rawName,
-      enumType,
-      specialty: String(taxonomy0.desc || "Healthcare"),
-      taxonomyCode: String(taxonomy0.code || ""),
-      address: String(locationAddr.address_1 || ""),
-      city: String(locationAddr.city || ""),
-      state: String(locationAddr.state || opts.state || ""),
-      zip: String(locationAddr.postal_code || ""),
-      phone: String(locationAddr.telephone_number || ""),
-      contactName: `${String(basic.authorized_official_first_name || basic.first_name || "")} ${String(basic.authorized_official_last_name || basic.last_name || "")}`.trim(),
-      contactTitle: String(basic.authorized_official_title_or_position || basic.credential || ""),
-      foundingYear: createdEpoch > 0 ? new Date(createdEpoch * 1000).getFullYear() : 0,
-      lastUpdated: lastUpdatedEpoch > 0 ? new Date(lastUpdatedEpoch * 1000).toISOString().slice(0, 10) : "",
-      licenseState: String(taxonomy0.state || opts.state || ""),
+      licenseState: String(taxonomy0.state || fallbackState || ""),
     };
 
     const practiceAge = provider.foundingYear > 0 ? currentYear - provider.foundingYear : 0;
@@ -546,6 +487,65 @@ export async function searchByProviderName(
   }
 
   profiles.sort((a, b) => b.acquisitionScore - a.acquisitionScore);
+  return profiles;
+}
+
+// ---------------------------------------------------------------------------
+// Main exported functions
+// ---------------------------------------------------------------------------
+
+export async function searchHealthcareProviders(opts: {
+  specialtyKey: string;
+  state: string;
+  city?: string;
+  limit?: number;
+  skip?: number;
+  entityType?: "NPI-1" | "NPI-2" | "all";
+  orgName?: string;
+  lastName?: string;
+}): Promise<{ total: number; profiles: PracticeProfile[] }> {
+  const benchmark = SPECIALTY_BENCHMARKS[opts.specialtyKey] || SPECIALTY_BENCHMARKS.all;
+
+  const limit = opts.limit || 25;
+  const skip = opts.skip || 0;
+
+  let url =
+    `https://npiregistry.cms.hhs.gov/api/?version=2.1` +
+    `&limit=${limit}` +
+    `&skip=${skip}`;
+
+  if (opts.entityType && opts.entityType !== "all") {
+    url += `&enumeration_type=${opts.entityType}`;
+  }
+
+  if (opts.specialtyKey && opts.specialtyKey !== "all" && benchmark.taxonomyQuery) {
+    url += `&taxonomy_description=${encodeURIComponent(benchmark.taxonomyQuery)}`;
+  }
+
+  if (opts.state && opts.state !== "ALL") {
+    url += `&state=${opts.state}`;
+  }
+
+  if (opts.city) {
+    url += `&city=${encodeURIComponent(opts.city)}`;
+  }
+
+  if (opts.orgName) {
+    url += `&organization_name=${encodeURIComponent(opts.orgName)}`;
+  }
+
+  if (opts.lastName) {
+    url += `&last_name=${encodeURIComponent(opts.lastName)}`;
+  }
+
+  const res = await fetchWithCorsFallback(url, 20000);
+  if (!res.ok) throw new Error(`NPI API error: ${res.status}`);
+
+  const data = await res.json();
+  const resultCount: number = data.result_count || 0;
+  const results: unknown[] = data.results || [];
+
+  const profiles = buildProfilesFromResults(results, benchmark, opts.specialtyKey || "all", opts.state);
 
   return { total: resultCount, profiles };
 }
