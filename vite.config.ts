@@ -8,11 +8,9 @@ export default defineConfig({
   base: './',
   plugins: [inspectAttr(), react()],
   server: {
-    port: 3000,
+    port: 5173,
     proxy: {
-      "/sec-files": { target: "https://www.sec.gov", changeOrigin: true, rewrite: (p) => p.replace(/^\/sec-files/, "/files") },
-      "/sec-arch": { target: "https://www.sec.gov", changeOrigin: true, rewrite: (p) => p.replace(/^\/sec-arch/, "/Archives") },
-      "/npi-api": { target: "https://npiregistry.cms.hhs.gov", changeOrigin: true, rewrite: (p) => p.replace(/^\/npi-api/, "") },
+      "/api": "http://localhost:3000",
     },
   },
   resolve: {
@@ -20,4 +18,4 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-});
+})

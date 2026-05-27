@@ -91,33 +91,9 @@ export async function fetchProxied(url: string): Promise<any> {
     if (text.trim().startsWith("<")) throw new Error("HTML response");
     return JSON.parse(text);
   };
-  try {
-    const controller = new AbortController();
-    setTimeout(() => controller.abort(), 8000);
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl, { signal: controller.signal });
-    if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
-    const wrapper = await parseJSON(res);
-    if (wrapper.status?.http_code !== 200) throw new Error(`Origin HTTP ${wrapper.status?.http_code}`);
-    return JSON.parse(wrapper.contents);
-  } catch { /* try next */ }
-  try {
-    const controller = new AbortController();
-    setTimeout(() => controller.abort(), 8000);
-    const proxyUrl = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl, { signal: controller.signal });
-    if (!res.ok) throw new Error(`Proxy2 HTTP ${res.status}`);
-    return parseJSON(res);
-  } catch { /* try next */ }
-  try {
-    const controller = new AbortController();
-    setTimeout(() => controller.abort(), 8000);
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl, { signal: controller.signal });
-    if (!res.ok) throw new Error(`Proxy3 HTTP ${res.status}`);
-    return parseJSON(res);
-  } catch { /* try next */ }
-  throw new Error("All CORS proxies failed");
+  const res = await fetchWithTimeout(url, {}, 15000);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseJSON(res);
 }
 
 async function searchSEC(name: string, ticker?: string, cik?: string): Promise<SecFiling[]> {
@@ -127,7 +103,7 @@ async function searchSEC(name: string, ticker?: string, cik?: string): Promise<S
     else {
       try {
         // SEC EDGAR's company_tickers.json supports CORS — fetch directly, no proxy needed
-        const res = await fetchWithTimeout("https://www.sec.gov/files/company_tickers.json", { headers: { "User-Agent": "DealflowPlatform admin@example.com" } }, 10000);
+        const res = await fetchWithTimeout("/api/sec-files/company_tickers.json", { headers: { "User-Agent": "DealflowPlatform admin@example.com" } }, 10000);
         if (res.ok) {
           const tickers = await res.json();
           for (const entry of Object.values(tickers)) {
@@ -138,7 +114,7 @@ async function searchSEC(name: string, ticker?: string, cik?: string): Promise<S
     }
   }
   if (!cik) throw new Error("No CIK found for ticker");
-  const data = await fetchWithTimeout(`https://data.sec.gov/submissions/CIK${cik}.json`, {}, 45000).then(r => r.json());
+  const data = await fetchWithTimeout(`/api/data-sec/submissions/CIK${cik}.json`, {}, 45000).then(r => r.json());
   const recent = data.filings?.recent || {};
   const forms: string[] = recent.form || [];
   const dates: string[] = recent.filingDate || [];
@@ -162,29 +138,12 @@ async function extract8kItems(acc: string, doc: string, cik: string): Promise<st
   if (!acc || !doc) return [];
   const accClean = acc.replace(/-/g, "");
   const cikClean = cik.replace(/^0+/, "");
-  const path = `/edgar/data/${cikClean}/${accClean}/${doc}`;
-  const remoteUrl = `https://www.sec.gov/Archives${path}`;
   let text = "";
 
-  // In dev, Vite proxies /sec-arch to www.sec.gov/Archives — avoids CORS
   try {
-    const res = await fetchWithTimeout(`/sec-arch${path}`, {}, 6000);
+    const res = await fetchWithTimeout(`/api/sec-arch/edgar/data/${cikClean}/${accClean}/${doc}`, {}, 6000);
     if (res.ok) { const t = await res.text(); text = t.toUpperCase(); }
   } catch { /* */ }
-
-  // Fallback: CORS proxies
-  if (!text) {
-    try {
-      const res = await fetchWithTimeout(`https://api.allorigins.win/get?url=${encodeURIComponent(remoteUrl)}`, {}, 6000);
-      if (res.ok) { const w = await res.json(); text = (w.contents || "").toUpperCase(); }
-    } catch { /* */ }
-  }
-  if (!text) {
-    try {
-      const res = await fetchWithTimeout(`https://corsproxy.io/?${encodeURIComponent(remoteUrl)}`, {}, 6000);
-      if (res.ok) { const t = await res.text(); if (!t.trim().startsWith("{")) text = t.toUpperCase(); }
-    } catch { /* */ }
-  }
 
   if (!text) return [];
   const found: string[] = [];
@@ -197,7 +156,7 @@ async function extract8kItems(acc: string, doc: string, cik: string): Promise<st
 async function searchCourt(name: string): Promise<CourtCase[]> {
   try {
     // CourtListener API uses snake_case fields; court field is a resource URL, court_id is the short code
-    const res = await fetchWithTimeout(`https://www.courtlistener.com/api/rest/v4/dockets/?party_name=${encodeURIComponent(name)}&page_size=20`, {}, 15000);
+    const res = await fetchWithTimeout(`/api/courtlistener/api/rest/v4/dockets/?party_name=${encodeURIComponent(name)}&page_size=20`, {}, 15000);
     if (!res.ok) throw new Error(`CourtListener HTTP ${res.status}`);
     const data = await res.json();
     return (data.results || []).map((x: any) => {
@@ -221,7 +180,7 @@ async function searchUSPTO(name: string): Promise<Patent[]> {
     const q = encodeURIComponent(JSON.stringify({ "_text_any": { "assignee_organization": name } }));
     const f = encodeURIComponent(JSON.stringify(["patent_id", "patent_date", "patent_title", "assignees.assignee_organization"]));
     const s = encodeURIComponent(JSON.stringify([{ "patent_date": "desc" }]));
-    const pvUrl = `https://search.patentsview.org/api/v1/patents/?q=${q}&f=${f}&per_page=50&sort=${s}`;
+    const pvUrl = `/api/patentsview/api/v1/patents/?q=${q}&f=${f}&per_page=50&sort=${s}`;
     const res = await fetchWithTimeout(pvUrl, {}, 15000);
     if (!res.ok) throw new Error(`PatentsView HTTP ${res.status}`);
     const data = await res.json();
@@ -236,7 +195,7 @@ async function searchUSPTO(name: string): Promise<Patent[]> {
 }
 
 async function searchSOS(name: string): Promise<SosRecord[]> {
-  const ocUrl = `https://api.opencorporates.com/v0.4/companies/search?q=${encodeURIComponent(name)}&per_page=10`;
+  const ocUrl = `/api/opencorporates/v0.4/companies/search?q=${encodeURIComponent(name)}&per_page=10`;
   const parse = (data: any): SosRecord[] =>
     (data.results?.companies || []).map((c: any) => {
       const co = c.company || {};
@@ -297,7 +256,7 @@ function computeScore(signals: Signal[]) {
 
 export async function searchFormDByCompany(name: string): Promise<FormDRecord[]> {
   try {
-    const url = `https://efts.sec.gov/LATEST/search-index?q=${encodeURIComponent(name)}&forms=D&dateRange=custom&startdt=2018-01-01`;
+    const url = `/api/efts/LATEST/search-index?q=${encodeURIComponent(name)}&forms=D&dateRange=custom&startdt=2018-01-01`;
     const data = await fetchProxied(url);
     const hits: unknown[] = data?.hits?.hits || [];
     return hits.slice(0, 10).map((h: unknown) => {
@@ -317,7 +276,7 @@ export async function searchFormDByCompany(name: string): Promise<FormDRecord[]>
 
 export async function browseFormD(opts: { state?: string; query?: string; startDate?: string; from?: number }): Promise<{ total: number; results: FormDRecord[] }> {
   try {
-    let url = `https://efts.sec.gov/LATEST/search-index?forms=D&dateRange=custom&startdt=${opts.startDate || "2020-01-01"}&from=${opts.from || 0}`;
+    let url = `/api/efts/LATEST/search-index?forms=D&dateRange=custom&startdt=${opts.startDate || "2020-01-01"}&from=${opts.from || 0}`;
     if (opts.query) url += `&q=${encodeURIComponent(opts.query)}`;
     if (opts.state) url += `&locationCode=${opts.state}`;
     const data = await fetchProxied(url);
@@ -341,7 +300,7 @@ export async function browseFormD(opts: { state?: string; query?: string; startD
 
 export async function searchEDGARText(query: string, opts?: { forms?: string; startDate?: string; from?: number }): Promise<{ total: number; results: EDGARTextHit[] }> {
   try {
-    let url = `https://efts.sec.gov/LATEST/search-index?q=${encodeURIComponent(query)}&dateRange=custom&startdt=${opts?.startDate || "2023-01-01"}&from=${opts?.from || 0}`;
+    let url = `/api/efts/LATEST/search-index?q=${encodeURIComponent(query)}&dateRange=custom&startdt=${opts?.startDate || "2023-01-01"}&from=${opts?.from || 0}`;
     if (opts?.forms) url += `&forms=${opts.forms}`;
     const data = await fetchProxied(url);
     const total: number = data?.hits?.total?.value || 0;
@@ -378,7 +337,7 @@ export async function searchSBAData(name: string): Promise<SBARecord | null> {
       state: String(b.BorrowerState || ""),
     };
   };
-  const sbaUrl = `https://data.sba.gov/api/3/action/datastore_search?resource_id=aab8e9f9-36d1-42e1-b3ba-e59c79f1d7f0&q=${encodeURIComponent(name)}&limit=5`;
+  const sbaUrl = `/api/sba/api/3/action/datastore_search?resource_id=aab8e9f9-36d1-42e1-b3ba-e59c79f1d7f0&q=${encodeURIComponent(name)}&limit=5`;
   try {
     const res = await fetchWithTimeout(sbaUrl, {}, 12000);
     if (res.ok) {
@@ -396,7 +355,7 @@ export async function searchSBAData(name: string): Promise<SBARecord | null> {
 
 export async function searchComps(sector: string): Promise<CompTransaction[]> {
   try {
-    const url = `https://efts.sec.gov/LATEST/search-index?forms=S-4&q=${encodeURIComponent(sector)}&dateRange=custom&startdt=2020-01-01`;
+    const url = `/api/efts/LATEST/search-index?forms=S-4&q=${encodeURIComponent(sector)}&dateRange=custom&startdt=2020-01-01`;
     const data = await fetchProxied(url);
     const hits: unknown[] = data?.hits?.hits || [];
     return hits.slice(0, 15).map((h: unknown) => {
@@ -414,7 +373,7 @@ export async function searchComps(sector: string): Promise<CompTransaction[]> {
 
 export async function searchAdvisors(query: string): Promise<AdvisorRecord[]> {
   try {
-    const url = `https://efts.sec.gov/LATEST/search-index?forms=ADV&q=${encodeURIComponent(query)}&dateRange=custom&startdt=2023-01-01`;
+    const url = `/api/efts/LATEST/search-index?forms=ADV&q=${encodeURIComponent(query)}&dateRange=custom&startdt=2023-01-01`;
     const data = await fetchProxied(url);
     const hits: unknown[] = data?.hits?.hits || [];
     return hits.slice(0, 10).map((h: unknown) => {
