@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Radio, Plus, Check, ExternalLink } from "lucide-react";
 import { searchEDGARText, type EDGARTextHit } from "@/lib/api";
-import { addMonitored, getMonitored } from "@/lib/alertEngine";
+import { addMonitored } from "@/lib/alertEngine";
+import { useData } from "@/lib/DataContext";
+
+const WATCHLIST_NAME = "Market Signals";
 
 const card = { background: "#132A1A", border: "1px solid rgba(212,197,169,0.12)" };
 
@@ -128,7 +131,8 @@ export default function MarketSignalScanner() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [activePreset, setActivePreset] = useState<string>(PRESETS[0].label);
-  const [monitored, setMonitored] = useState<string[]>(() => getMonitored());
+  const { addToWatchlist, watchlists } = useData();
+  const watchlistCompanies = watchlists.find(w => w.name === WATCHLIST_NAME)?.companies || [];
 
   const doSearch = useCallback(async (q: string, forms: string, days: number, newFrom = 0) => {
     if (newFrom === 0) setLoading(true);
@@ -172,8 +176,8 @@ export default function MarketSignalScanner() {
   }
 
   function handleMonitor(name: string) {
-    addMonitored(name);
-    setMonitored(getMonitored());
+    addMonitored(name);              // keep for alert engine
+    addToWatchlist(name, WATCHLIST_NAME);
   }
 
   return (
@@ -263,7 +267,7 @@ export default function MarketSignalScanner() {
       {!loading && results.length > 0 && (
         <div className="space-y-2">
           {results.map((r, i) => {
-            const isMonitored = monitored.includes(r.entity_name);
+            const isMonitored = watchlistCompanies.includes(r.entity_name);
             const url = edgarUrl(r.accession_no);
             return (
               <div key={`${r.accession_no}_${i}`} className="rounded-lg p-4 flex items-center gap-4" style={card}>

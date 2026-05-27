@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Database, Plus, Check, TrendingUp, Clock, DollarSign } from "lucide-react";
 import { browseFormD, type FormDRecord } from "@/lib/api";
-import { addMonitored, getMonitored } from "@/lib/alertEngine";
+import { addMonitored } from "@/lib/alertEngine";
+import { useData } from "@/lib/DataContext";
+
+const WATCHLIST_NAME = "Deal Finder";
 
 const card = { background: "#132A1A", border: "1px solid rgba(212,197,169,0.12)" };
 
@@ -83,6 +86,7 @@ function holdPeriod(dateFiled: string): { years: number; label: string; badge: {
 }
 
 export default function PrivateDealFinder() {
+  const { addToWatchlist, watchlists } = useData();
   const [stateFilter, setStateFilter] = useState("");
   const [dateRange, setDateRange] = useState("5");
   const [sector, setSector] = useState(0); // index into LMM_SECTORS
@@ -92,8 +96,10 @@ export default function PrivateDealFinder() {
   const [total, setTotal] = useState(0);
   const [from, setFrom] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [monitored, setMonitored] = useState<string[]>(() => getMonitored());
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Derive monitored state from watchlist (reactive — no separate useState needed)
+  const watchlistCompanies = watchlists.find(w => w.name === WATCHLIST_NAME)?.companies || [];
 
   const doSearch = useCallback(async (newFrom = 0) => {
     if (newFrom === 0) setLoading(true);
@@ -128,8 +134,8 @@ export default function PrivateDealFinder() {
   useEffect(() => { doSearch(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleMonitor(name: string) {
-    addMonitored(name);
-    setMonitored(getMonitored());
+    addMonitored(name);              // keep for alert engine
+    addToWatchlist(name, WATCHLIST_NAME);
   }
 
   const exitWindowCount = results.filter(r => {
@@ -235,7 +241,7 @@ export default function PrivateDealFinder() {
         <div className="space-y-2">
           {results.map((r, i) => {
             const hp = holdPeriod(r.date_filed);
-            const isMonitored = monitored.includes(r.company_name);
+            const isMonitored = watchlistCompanies.includes(r.company_name);
             return (
               <div key={`${r.accession_no}_${i}`} className="rounded-lg p-4 flex items-center gap-4" style={card}>
                 <div className="flex-1 min-w-0 space-y-1.5">

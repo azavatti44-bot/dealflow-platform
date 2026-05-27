@@ -5,8 +5,10 @@ import {
   searchHealthcareProviders,
   type PracticeProfile,
 } from "@/lib/healthcareApi";
-import { addMonitored, getMonitored } from "@/lib/alertEngine";
+import { addMonitored } from "@/lib/alertEngine";
 import { useData } from "@/lib/DataContext";
+
+const WATCHLIST_NAME = "Healthcare";
 import type { CompanyResult } from "@/lib/api";
 
 // ---------------------------------------------------------------------------
@@ -428,7 +430,8 @@ function PracticeCard({
 // Main page
 // ---------------------------------------------------------------------------
 export default function HealthcareDealEngine() {
-  const { addCompany } = useData();
+  const { addCompany, addToWatchlist, watchlists } = useData();
+  const watchlistCompanies = watchlists.find(w => w.name === WATCHLIST_NAME)?.companies || [];
 
   const [selectedQuickKey, setSelectedQuickKey] = useState("all");
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
@@ -446,7 +449,6 @@ export default function HealthcareDealEngine() {
   const [total, setTotal] = useState(0);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [monitored, setMonitored] = useState<string[]>(() => getMonitored());
   const [addedToPipeline, setAddedToPipeline] = useState<Set<string>>(new Set());
 
   const selectedBenchmark = SPECIALTY_BENCHMARKS[QUICK_SPECIALTIES.find(s => s.key === selectedQuickKey)?.benchmark || "all"];
@@ -518,8 +520,8 @@ export default function HealthcareDealEngine() {
   }
 
   function handleMonitor(profile: PracticeProfile) {
-    addMonitored(profile.provider.name);
-    setMonitored(getMonitored());
+    addMonitored(profile.provider.name);              // keep for alert engine
+    addToWatchlist(profile.provider.name, WATCHLIST_NAME);
   }
 
   const visibleQuickSpecialties = showAllSpecialties
@@ -894,7 +896,7 @@ export default function HealthcareDealEngine() {
                   <PracticeCard
                     key={profile.provider.npi}
                     profile={profile}
-                    isMonitored={monitored.includes(profile.provider.name)}
+                    isMonitored={watchlistCompanies.includes(profile.provider.name)}
                     isInPipeline={addedToPipeline.has(profile.provider.npi)}
                     onAddPipeline={handleAddPipeline}
                     onMonitor={handleMonitor}
