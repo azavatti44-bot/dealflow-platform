@@ -274,26 +274,31 @@ export async function searchFormDByCompany(name: string): Promise<FormDRecord[]>
   } catch { return []; }
 }
 
-export async function browseFormD(opts: { state?: string; query?: string; startDate?: string; from?: number }): Promise<{ total: number; results: FormDRecord[] }> {
+export async function browseFormD(opts: { state?: string; query?: string; startDate?: string; from?: number; minAmount?: number; maxAmount?: number }): Promise<{ total: number; results: FormDRecord[] }> {
   try {
-    let url = `/api/efts/LATEST/search-index?forms=D&dateRange=custom&startdt=${opts.startDate || "2020-01-01"}&from=${opts.from || 0}`;
+    let url = `/api/efts/LATEST/search-index?forms=D,D%2FA&dateRange=custom&startdt=${opts.startDate || "2020-01-01"}&from=${opts.from || 0}`;
     if (opts.query) url += `&q=${encodeURIComponent(opts.query)}`;
     if (opts.state) url += `&locationCode=${opts.state}`;
     const data = await fetchProxied(url);
     const total: number = data?.hits?.total?.value || 0;
     const hits: unknown[] = data?.hits?.hits || [];
-    const results = hits.slice(0, 20).map((h: unknown) => {
+    let results = hits.slice(0, 20).map((h: unknown) => {
       const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
       const biz = src.biz_location as Record<string, unknown> || {};
+      const rawAmount = Number(src.total_offering_amount ?? src.totalOfferingAmount ?? 0);
       return {
         company_name: String(src.entity_name || ""),
         cik: Array.isArray(src.ciks) && src.ciks.length ? String(src.ciks[0]) : "",
-        state: String(biz.stateOrCountry || ""),
+        state: String(biz.stateOrCountry || biz.stateOrCountryDescription || ""),
         date_filed: String(src.file_date || ""),
         form_type: String(src.form_type || "D"),
         accession_no: String(src.accession_no || ""),
+        amount_raised: rawAmount > 0 ? rawAmount : undefined,
+        industry: String(src.industry_category_description || src.industryCategoryDescription || ""),
       };
     });
+    if (opts.minAmount != null) results = results.filter(r => (r.amount_raised ?? 0) >= opts.minAmount!);
+    if (opts.maxAmount != null) results = results.filter(r => r.amount_raised == null || r.amount_raised <= opts.maxAmount!);
     return { total, results };
   } catch { return { total: 0, results: [] }; }
 }
