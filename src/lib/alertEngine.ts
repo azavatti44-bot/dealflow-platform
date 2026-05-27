@@ -1,3 +1,5 @@
+import { fetchProxied } from "./api";
+
 export interface Alert {
   id: string;
   company_name: string;
@@ -108,7 +110,6 @@ export async function checkForNewFilings(): Promise<void> {
       try {
         const url = `/api/efts/LATEST/search-index?q=${encodeURIComponent(`"${company}"`)}&dateRange=custom&startdt=${lastCheck}`;
         // Route through CORS proxy — efts.sec.gov blocks direct browser requests from non-localhost origins
-        const { fetchProxied } = await import("./api");
         const data = await fetchProxied(url);
         const hits: unknown[] = data?.hits?.hits || [];
 

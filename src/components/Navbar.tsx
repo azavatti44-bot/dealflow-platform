@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Activity, Send, Settings, Signal, Database, Radio, Zap, HeartPulse } from "lucide-react";
+import { Activity, Send, Settings, Signal, Database, Radio, Zap, HeartPulse, Briefcase } from "lucide-react";
 import AlertBell from "./AlertBell";
 import { startAlertEngine } from "@/lib/alertEngine";
 
@@ -11,6 +11,7 @@ const navItems = [
   { to: "/market-signals", label: "Market Signals", icon: Radio },
   { to: "/signals", label: "Signals", icon: Zap },
   { to: "/healthcare", label: "Healthcare", icon: HeartPulse },
+  { to: "/advisors", label: "Advisors", icon: Briefcase },
   { to: "/outreach", label: "Outreach", icon: Send },
   { to: "/settings", label: "Settings", icon: Settings },
 ];

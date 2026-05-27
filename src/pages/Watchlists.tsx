@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { FolderPlus, Star, X } from "lucide-react";
 import { useData } from "@/lib/DataContext";
 import { useNavigate } from "react-router-dom";
@@ -12,13 +12,25 @@ export default function Watchlists() {
   const [newName, setNewName] = useState("");
   const [lists, setLists] = useState(watchlists);
 
-  const addList = () => {
-    if (!newName.trim()) return;
-    setLists([...lists, { id: Date.now().toString(), name: newName, companies: [], created: new Date().toISOString().slice(0, 10) }]);
-    setNewName("");
-  };
+  useEffect(() => {
+    setLists(watchlists);
+  }, [watchlists]);
 
-  const removeList = (id: string) => setLists(lists.filter(l => l.id !== id));
+  const addList = useCallback(() => {
+    if (!newName.trim()) return;
+    const newList = { id: Date.now().toString(), name: newName, companies: [], created: new Date().toISOString().slice(0, 10) };
+    const updated = [...lists, newList];
+    setLists(updated);
+    try { localStorage.setItem("stc_watchlists", JSON.stringify(updated)); } catch {}
+    setNewName("");
+  }, [newName, lists]);
+
+  const removeList = useCallback((id: string) => {
+    const updated = lists.filter(l => l.id !== id);
+    setLists(updated);
+    try { localStorage.setItem("stc_watchlists", JSON.stringify(updated)); } catch {}
+    if (active === id) setActive(updated[0]?.id || "1");
+  }, [lists, active]);
   const activeList = lists.find(l => l.id === active);
   const activeCompanies = activeList ? companies.filter(c => activeList.companies.includes(c.name)) : [];
 
