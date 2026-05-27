@@ -3,7 +3,6 @@ import { DataProvider } from "./lib/DataContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
 import CommandCenter from "./pages/CommandCenter";
-import DealFlow from "./pages/DealFlow";
 import CompanyDetail from "./pages/CompanyDetail";
 import SignalLibrary from "./pages/SignalLibrary";
 import SettingsPage from "./pages/SettingsPage";
@@ -21,7 +20,6 @@ export default function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<CommandCenter />} />
-            <Route path="/deals" element={<DealFlow />} />
             <Route path="/company/:id" element={<CompanyDetail />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/advisors" element={<AdvisorGraph />} />

@@ -1,12 +1,11 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, Activity, Send, Settings, Signal, Database, Radio, Zap, HeartPulse } from "lucide-react";
+import { Activity, Send, Settings, Signal, Database, Radio, Zap, HeartPulse } from "lucide-react";
 import AlertBell from "./AlertBell";
 import { startAlertEngine } from "@/lib/alertEngine";
 
 const navItems = [
   { to: "/", label: "Command", icon: Activity },
-  { to: "/deals", label: "Deal Flow", icon: Search },
   { to: "/watchlists", label: "Watchlists", icon: Signal },
   { to: "/private-finder", label: "Deal Finder", icon: Database },
   { to: "/market-signals", label: "Market Signals", icon: Radio },
