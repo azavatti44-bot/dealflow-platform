@@ -14,16 +14,16 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#0B1A0E" }}>
+        <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#F7F5EF" }}>
           <div className="max-w-lg w-full space-y-4">
-            <h1 className="font-serif text-2xl font-bold" style={{ color: "#C9A0A0" }}>Runtime Error</h1>
-            <div className="rounded-lg p-4 font-mono text-xs overflow-auto" style={{ background: "#132A1A", color: "#F5F0E6", border: "1px solid rgba(139,58,58,0.3)" }}>
-              <p style={{ color: "#C9A0A0" }}>{this.state.error?.name}: {this.state.error?.message}</p>
-              <pre className="mt-2" style={{ color: "#94A3B8" }}>{this.state.error?.stack}</pre>
+            <h1 className="font-serif text-2xl font-bold" style={{ color: "#DC2626" }}>Runtime Error</h1>
+            <div className="rounded-lg p-4 font-mono text-xs overflow-auto" style={{ background: "#FFFFFF", color: "#1A2416", border: "1px solid rgba(220,38,38,0.2)" }}>
+              <p style={{ color: "#DC2626" }}>{this.state.error?.name}: {this.state.error?.message}</p>
+              <pre className="mt-2" style={{ color: "#64748B" }}>{this.state.error?.stack}</pre>
             </div>
             <button onClick={() => window.location.reload()}
               className="px-4 py-2 rounded-lg text-sm font-semibold"
-              style={{ background: "#6EE7B7", color: "#0B1A0E" }}>
+              style={{ background: "#16A34A", color: "#FFFFFF" }}>
               Reload Page
             </button>
           </div>

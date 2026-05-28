@@ -6,24 +6,24 @@
   html { scroll-behavior: smooth; }
 
   body {
-    background: #0B1A0E;
-    color: #F5F0E6;
+    background: #F7F5EF;
+    color: #1A2416;
     font-family: "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    background: rgba(110, 231, 183, 0.2);
-    color: #F5F0E6;
+    background: rgba(22, 163, 74, 0.15);
+    color: #1A2416;
   }
 
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #0B1A0E; }
-  ::-webkit-scrollbar-thumb { background: #2A3E2A; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #3A4E3A; }
+  ::-webkit-scrollbar-track { background: #F0EDE5; }
+  ::-webkit-scrollbar-thumb { background: #CBD5C0; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #A8B8A0; }
 
-  * { scrollbar-width: thin; scrollbar-color: #2A3E2A #0B1A0E; }
+  * { scrollbar-width: thin; scrollbar-color: #CBD5C0 #F0EDE5; }
 }
 
 @layer utilities {

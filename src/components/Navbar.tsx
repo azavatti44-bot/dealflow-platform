@@ -35,13 +35,13 @@ export default function Navbar() {
   return (
     <nav
       className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-4 md:px-6 border-b"
-      style={{ background: "rgba(11,26,14,0.92)", backdropFilter: "blur(12px)", borderColor: "rgba(148,163,184,0.12)" }}
+      style={{ background: "rgba(247,245,239,0.95)", backdropFilter: "blur(12px)", borderColor: "rgba(0,0,0,0.08)" }}
     >
       {/* Left: logo + nav links */}
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <span className="font-serif text-base font-bold tracking-wide" style={{ color: "#F5F0E6" }}>DEALNEXA</span>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#6EE7B7" }} />
+          <span className="font-serif text-base font-bold tracking-wide" style={{ color: "#1A2416" }}>DEALNEXA</span>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#16A34A" }} />
         </Link>
         <div className="hidden md:flex items-center gap-1 overflow-x-auto">
           {navItems.map(n => {
@@ -49,7 +49,7 @@ export default function Navbar() {
             return (
               <Link key={n.to} to={n.to}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors whitespace-nowrap"
-                style={{ color: active ? "#6EE7B7" : "#94A3B8", background: active ? "rgba(110,231,183,0.1)" : "transparent" }}>
+                style={{ color: active ? "#16A34A" : "#64748B", background: active ? "rgba(22,163,74,0.08)" : "transparent" }}>
                 <n.icon size={13} />{n.label}
               </Link>
             );
@@ -66,15 +66,15 @@ export default function Navbar() {
           <button
             onClick={e => { e.stopPropagation(); setShowMenu(v => !v); }}
             className="flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-full transition-colors hover:opacity-80"
-            style={{ border: "1px solid rgba(110,231,183,0.3)", background: "rgba(110,231,183,0.08)" }}
+            style={{ border: "1px solid rgba(22,163,74,0.2)", background: "rgba(22,163,74,0.06)" }}
           >
             <div
               className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
-              style={{ background: "rgba(110,231,183,0.2)", color: "#6EE7B7" }}
+              style={{ background: "rgba(22,163,74,0.15)", color: "#16A34A" }}
             >
               {user?.initials || "?"}
             </div>
-            <span className="hidden sm:block text-[11px] font-medium max-w-[100px] truncate" style={{ color: "#F5F0E6" }}>
+            <span className="hidden sm:block text-[11px] font-medium max-w-[100px] truncate" style={{ color: "#1A2416" }}>
               {user?.name?.split(" ")[0] || "User"}
             </span>
           </button>
@@ -82,17 +82,17 @@ export default function Navbar() {
           {showMenu && (
             <div
               className="absolute right-0 top-10 w-48 rounded-xl py-1 shadow-2xl z-50"
-              style={{ background: "#1A351F", border: "1px solid rgba(148,163,184,0.12)" }}
+              style={{ background: "#F0EDE5", border: "1px solid rgba(0,0,0,0.08)" }}
               onClick={e => e.stopPropagation()}
             >
-              <div className="px-4 py-2.5" style={{ borderBottom: "1px solid rgba(148,163,184,0.08)" }}>
-                <p className="text-xs font-semibold truncate" style={{ color: "#F5F0E6" }}>{user?.name}</p>
+              <div className="px-4 py-2.5" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                <p className="text-xs font-semibold truncate" style={{ color: "#1A2416" }}>{user?.name}</p>
                 <p className="text-[10px] truncate mt-0.5" style={{ color: "#64748B" }}>{user?.email}</p>
               </div>
               <button
                 onClick={() => { setShowMenu(false); signOut(); }}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs transition-colors hover:opacity-80"
-                style={{ color: "#C07070" }}
+                style={{ color: "#DC2626" }}
               >
                 <LogOut size={13} />
                 Sign out

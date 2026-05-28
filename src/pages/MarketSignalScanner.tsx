@@ -6,7 +6,7 @@ import { useData } from "@/lib/DataContext";
 
 const WATCHLIST_NAME = "Market Signals";
 
-const card = { background: "#132A1A", border: "1px solid rgba(148,163,184,0.12)" };
+const card = { background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" };
 
 interface Preset {
   label: string;
@@ -23,70 +23,70 @@ const PRESETS: Preset[] = [
     query: '"strategic alternatives"',
     forms: "8-K,10-K",
     description: "Exploring a sale or merger",
-    color: "#6EE7B7",
+    color: "#16A34A",
   },
   {
     label: "Going Concern",
     query: '"going concern"',
     forms: "10-K,10-Q",
     description: "Auditor distress flag",
-    color: "#C07070",
+    color: "#DC2626",
   },
   {
     label: "Investment Banker Retained",
     query: '"investment banker" OR "financial advisor retained" OR "engaged a financial advisor"',
     forms: "8-K",
     description: "Active sale process started",
-    color: "#6EE7B7",
+    color: "#16A34A",
   },
   {
     label: "Founder / CEO Transition",
     query: '"chief executive" OR "founder" "transition" OR "succession"',
     forms: "8-K",
     description: "Leadership change = exit signal",
-    color: "#34D399",
+    color: "#22C55E",
   },
   {
     label: "Exploring Strategic",
     query: '"exploring strategic" OR "evaluating strategic"',
     forms: "8-K,10-K",
     description: "Early-stage process indicator",
-    color: "#94A3B8",
+    color: "#64748B",
   },
   {
     label: "Sale of the Company",
     query: '"sale of the company" OR "sale of our company"',
     forms: "8-K",
     description: "Direct sale announcement",
-    color: "#6EE7B7",
+    color: "#16A34A",
   },
   {
     label: "Chapter 11 / Distress",
     query: '"chapter 11" OR "bankruptcy protection" OR "restructuring"',
     forms: "8-K",
     description: "Distressed acquisition candidates",
-    color: "#C07070",
+    color: "#DC2626",
   },
   {
     label: "Key Man / Founder Exit",
     query: '"key man" OR "key person" OR "founder departure"',
     forms: "8-K,10-K",
     description: "Founder dependency risk",
-    color: "#34D399",
+    color: "#22C55E",
   },
   {
     label: "Material Agreement",
     query: '"material definitive agreement" "acquisition" OR "merger"',
     forms: "8-K",
     description: "Deal announcement filings",
-    color: "#6EE7B7",
+    color: "#16A34A",
   },
   {
     label: "WARN / Layoffs",
     query: '"WARN Act" OR "workforce reduction" OR "reduction in force"',
     forms: "8-K,10-K",
     description: "Operational contraction signal",
-    color: "#C07070",
+    color: "#DC2626",
   },
 ];
 
@@ -185,17 +185,17 @@ export default function MarketSignalScanner() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg" style={{ background: "rgba(110,231,183,0.1)" }}>
-            <Radio size={20} style={{ color: "#6EE7B7" }} />
+          <div className="p-2 rounded-lg" style={{ background: "rgba(22,163,74,0.08)" }}>
+            <Radio size={20} style={{ color: "#16A34A" }} />
           </div>
           <div>
-            <h1 className="font-serif text-2xl font-bold" style={{ color: "#F5F0E6" }}>Market Signal Scanner</h1>
-            <p className="text-xs mt-0.5" style={{ color: "#94A3B8" }}>Real-time EDGAR full-text search for off-market LMM deal signals</p>
+            <h1 className="font-serif text-2xl font-bold" style={{ color: "#1A2416" }}>Market Signal Scanner</h1>
+            <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>Real-time EDGAR full-text search for off-market LMM deal signals</p>
           </div>
         </div>
         {hasSearched && !loading && (
           <div className="text-right shrink-0">
-            <p className="text-lg font-bold font-mono" style={{ color: "#6EE7B7" }}>{total.toLocaleString()}</p>
+            <p className="text-lg font-bold font-mono" style={{ color: "#16A34A" }}>{total.toLocaleString()}</p>
             <p className="text-[10px]" style={{ color: "#64748B" }}>filings matched</p>
           </div>
         )}
@@ -209,9 +209,9 @@ export default function MarketSignalScanner() {
             <button key={p.label} onClick={() => handlePreset(p)}
               className="text-left rounded-lg px-3 py-2.5 transition-all space-y-0.5"
               style={activePreset === p.label
-                ? { background: "rgba(110,231,183,0.15)", border: "1px solid rgba(110,231,183,0.4)" }
-                : { background: "#1A351F", border: "1px solid rgba(148,163,184,0.08)" }}>
-              <p className="text-[11px] font-semibold leading-tight" style={{ color: activePreset === p.label ? "#6EE7B7" : "#F5F0E6" }}>{p.label}</p>
+                ? { background: "rgba(22,163,74,0.12)", border: "1px solid rgba(110,231,183,0.4)" }
+                : { background: "#F0EDE5", border: "1px solid rgba(0,0,0,0.06)" }}>
+              <p className="text-[11px] font-semibold leading-tight" style={{ color: activePreset === p.label ? "#16A34A" : "#1A2416" }}>{p.label}</p>
               <p className="text-[9px] leading-tight" style={{ color: "#64748B" }}>{p.description}</p>
             </button>
           ))}
@@ -229,27 +229,27 @@ export default function MarketSignalScanner() {
               onKeyDown={e => e.key === "Enter" && handleSearch()}
               placeholder={`"strategic alternatives" OR "investment banker"`}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(148,163,184,0.15)" }}
+              style={{ background: "#F0EDE5", color: "#1A2416", border: "1px solid rgba(0,0,0,0.1)" }}
             />
           </div>
           <div>
             <select value={formType} onChange={e => setFormType(e.target.value)}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(148,163,184,0.15)" }}>
+              style={{ background: "#F0EDE5", color: "#1A2416", border: "1px solid rgba(0,0,0,0.1)" }}>
               {FORM_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
           </div>
           <div>
             <select value={dateRange} onChange={e => setDateRange(Number(e.target.value))}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(148,163,184,0.15)" }}>
+              style={{ background: "#F0EDE5", color: "#1A2416", border: "1px solid rgba(0,0,0,0.1)" }}>
               {DATE_OPTIONS.map(o => <option key={o.days} value={o.days}>{o.label}</option>)}
             </select>
           </div>
         </div>
         <button onClick={handleSearch} disabled={loading || !query.trim()}
           className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-60"
-          style={{ background: "#6EE7B7", color: "#0B1A0E" }}>
+          style={{ background: "#16A34A", color: "#FFFFFF" }}>
           {loading ? <Loader2 size={13} className="animate-spin" /> : <Radio size={13} />}
           Scan EDGAR
         </button>
@@ -258,8 +258,8 @@ export default function MarketSignalScanner() {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="animate-spin mr-2" size={18} style={{ color: "#6EE7B7" }} />
-          <span className="text-xs" style={{ color: "#94A3B8" }}>Scanning EDGAR full-text index...</span>
+          <Loader2 className="animate-spin mr-2" size={18} style={{ color: "#16A34A" }} />
+          <span className="text-xs" style={{ color: "#64748B" }}>Scanning EDGAR full-text index...</span>
         </div>
       )}
 
@@ -273,9 +273,9 @@ export default function MarketSignalScanner() {
               <div key={`${r.accession_no}_${i}`} className="rounded-lg p-4 flex items-center gap-4" style={card}>
                 <div className="flex-1 min-w-0 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-semibold" style={{ color: "#F5F0E6" }}>{r.entity_name || "Unknown Entity"}</span>
+                    <span className="text-sm font-semibold" style={{ color: "#1A2416" }}>{r.entity_name || "Unknown Entity"}</span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold shrink-0"
-                      style={{ background: "rgba(110,231,183,0.12)", color: "#6EE7B7" }}>{r.form_type}</span>
+                      style={{ background: "rgba(22,163,74,0.1)", color: "#16A34A" }}>{r.form_type}</span>
                     <span className="text-[10px]" style={{ color: "#64748B" }}>{relDate(r.file_date)}</span>
                   </div>
                   <div className="flex items-center gap-3 text-[10px] font-mono" style={{ color: "#64748B" }}>
@@ -284,7 +284,7 @@ export default function MarketSignalScanner() {
                     {url && (
                       <a href={url} target="_blank" rel="noopener noreferrer"
                         className="flex items-center gap-0.5 hover:opacity-80 transition-opacity"
-                        style={{ color: "#6EE7B7" }}>
+                        style={{ color: "#16A34A" }}>
                         <ExternalLink size={9} /> EDGAR
                       </a>
                     )}
@@ -294,8 +294,8 @@ export default function MarketSignalScanner() {
                   disabled={isMonitored || !r.entity_name}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] shrink-0 transition-colors disabled:opacity-50"
                   style={isMonitored
-                    ? { background: "rgba(74,124,89,0.12)", color: "#34D399" }
-                    : { background: "rgba(110,231,183,0.1)", color: "#6EE7B7" }}>
+                    ? { background: "rgba(22,163,74,0.12)", color: "#22C55E" }
+                    : { background: "rgba(22,163,74,0.08)", color: "#16A34A" }}>
                   {isMonitored ? <Check size={10} /> : <Plus size={10} />}
                   {isMonitored ? "Monitoring" : "Monitor"}
                 </button>
@@ -308,8 +308,8 @@ export default function MarketSignalScanner() {
       {/* Empty state */}
       {!loading && hasSearched && results.length === 0 && (
         <div className="rounded-xl py-16 text-center" style={card}>
-          <Radio size={32} className="mx-auto mb-3 opacity-30" style={{ color: "#6EE7B7" }} />
-          <p className="text-sm" style={{ color: "#94A3B8" }}>No filings matched this signal query.</p>
+          <Radio size={32} className="mx-auto mb-3 opacity-30" style={{ color: "#16A34A" }} />
+          <p className="text-sm" style={{ color: "#64748B" }}>No filings matched this signal query.</p>
           <p className="text-xs mt-1" style={{ color: "#64748B" }}>Try broadening the date range or using a different preset.</p>
         </div>
       )}
@@ -319,7 +319,7 @@ export default function MarketSignalScanner() {
         <div className="flex justify-center">
           <button onClick={() => doSearch(query, formType, dateRange, from + 10)} disabled={loadingMore}
             className="flex items-center gap-2 px-6 py-2 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-60"
-            style={{ background: "#1A351F", color: "#6EE7B7", border: "1px solid rgba(110,231,183,0.2)" }}>
+            style={{ background: "#F0EDE5", color: "#16A34A", border: "1px solid rgba(22,163,74,0.15)" }}>
             {loadingMore ? <Loader2 size={13} className="animate-spin" /> : null}
             Load More ({(total - results.length).toLocaleString()} remaining)
           </button>

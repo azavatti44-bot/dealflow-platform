@@ -3,9 +3,9 @@ import { Loader2, Eye, EyeOff, TrendingUp, Shield, Zap } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
 const inputStyle = {
-  background: "#1A351F",
-  color: "#F5F0E6",
-  border: "1px solid rgba(148,163,184,0.15)",
+  background: "#F0EDE5",
+  color: "#1A2416",
+  border: "1px solid rgba(0,0,0,0.1)",
 };
 
 const features = [
@@ -42,22 +42,22 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#0B1A0E", color: "#F5F0E6" }}>
+    <div className="min-h-screen flex" style={{ background: "#F7F5EF", color: "#1A2416" }}>
 
       {/* ── Left branding panel (desktop only) ── */}
       <div
         className="hidden lg:flex flex-col justify-between w-1/2 p-14"
-        style={{ borderRight: "1px solid rgba(148,163,184,0.07)" }}
+        style={{ borderRight: "1px solid rgba(0,0,0,0.05)" }}
       >
         {/* Logo */}
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="font-serif text-2xl font-bold tracking-wide" style={{ color: "#F5F0E6" }}>
+            <span className="font-serif text-2xl font-bold tracking-wide" style={{ color: "#1A2416" }}>
               DEALNEXA
             </span>
-            <span className="w-2 h-2 rounded-full" style={{ background: "#6EE7B7" }} />
+            <span className="w-2 h-2 rounded-full" style={{ background: "#16A34A" }} />
           </div>
-          <p className="text-[10px] mt-1 font-mono tracking-widest" style={{ color: "#3A4D3A" }}>
+          <p className="text-[10px] mt-1 font-mono tracking-widest" style={{ color: "#9CA3AF" }}>
             SAINT THOMAS CAPITAL · INTERNAL PLATFORM
           </p>
         </div>
@@ -65,12 +65,12 @@ export default function Landing() {
         {/* Headline */}
         <div className="space-y-8">
           <div>
-            <h1 className="font-serif text-5xl font-bold leading-[1.15]" style={{ color: "#F5F0E6" }}>
+            <h1 className="font-serif text-5xl font-bold leading-[1.15]" style={{ color: "#1A2416" }}>
               Find the deal<br />
-              <span style={{ color: "#6EE7B7" }}>before</span> it's<br />
+              <span style={{ color: "#16A34A" }}>before</span> it's<br />
               a deal.
             </h1>
-            <p className="text-sm mt-5 leading-relaxed max-w-xs" style={{ color: "#94A3B8" }}>
+            <p className="text-sm mt-5 leading-relaxed max-w-xs" style={{ color: "#64748B" }}>
               Private deal intelligence for lower middle market acquisitions.
               Each team member sees only their own pipeline.
             </p>
@@ -81,9 +81,9 @@ export default function Landing() {
               <div key={text} className="flex items-center gap-3">
                 <div
                   className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
-                  style={{ background: "rgba(110,231,183,0.1)" }}
+                  style={{ background: "rgba(22,163,74,0.08)" }}
                 >
-                  <Icon size={13} style={{ color: "#6EE7B7" }} />
+                  <Icon size={13} style={{ color: "#16A34A" }} />
                 </div>
                 <span className="text-xs" style={{ color: "#64748B" }}>{text}</span>
               </div>
@@ -91,7 +91,7 @@ export default function Landing() {
           </div>
         </div>
 
-        <p className="text-[10px]" style={{ color: "#1E2E1E" }}>
+        <p className="text-[10px]" style={{ color: "#9CA3AF" }}>
           © 2026 Saint Thomas Capital · Confidential
         </p>
       </div>
@@ -102,10 +102,10 @@ export default function Landing() {
         {/* Mobile logo */}
         <div className="lg:hidden mb-10 text-center">
           <div className="flex items-center gap-2 justify-center">
-            <span className="font-serif text-xl font-bold" style={{ color: "#F5F0E6" }}>DEALNEXA</span>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#6EE7B7" }} />
+            <span className="font-serif text-xl font-bold" style={{ color: "#1A2416" }}>DEALNEXA</span>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#16A34A" }} />
           </div>
-          <p className="text-[9px] mt-1 font-mono tracking-widest" style={{ color: "#3A4D3A" }}>
+          <p className="text-[9px] mt-1 font-mono tracking-widest" style={{ color: "#9CA3AF" }}>
             SAINT THOMAS CAPITAL
           </p>
         </div>
@@ -115,7 +115,7 @@ export default function Landing() {
           {/* Tab */}
           <div
             className="flex rounded-xl p-1"
-            style={{ background: "#132A1A", border: "1px solid rgba(148,163,184,0.08)" }}
+            style={{ background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.06)" }}
           >
             {(["login", "signup"] as const).map((m) => (
               <button
@@ -124,8 +124,8 @@ export default function Landing() {
                 className="flex-1 py-2.5 text-xs font-semibold rounded-lg transition-all"
                 style={
                   mode === m
-                    ? { background: "#6EE7B7", color: "#0B1A0E" }
-                    : { background: "transparent", color: "#94A3B8" }
+                    ? { background: "#16A34A", color: "#FFFFFF" }
+                    : { background: "transparent", color: "#64748B" }
                 }
               >
                 {m === "login" ? "Sign In" : "Create Account"}
@@ -198,9 +198,9 @@ export default function Landing() {
               <div
                 className="px-4 py-2.5 rounded-lg text-xs leading-snug"
                 style={{
-                  background: "rgba(192,112,112,0.1)",
-                  border: "1px solid rgba(192,112,112,0.2)",
-                  color: "#C07070",
+                  background: "rgba(220,38,38,0.08)",
+                  border: "1px solid rgba(220,38,38,0.15)",
+                  color: "#DC2626",
                 }}
               >
                 {error}
@@ -211,7 +211,7 @@ export default function Landing() {
               type="submit"
               disabled={loading}
               className="w-full py-3 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
-              style={{ background: "#6EE7B7", color: "#0B1A0E" }}
+              style={{ background: "#16A34A", color: "#FFFFFF" }}
             >
               {loading && <Loader2 size={14} className="animate-spin" />}
               {mode === "login" ? "Sign In" : "Create Account"}
@@ -226,7 +226,7 @@ export default function Landing() {
                 <button
                   onClick={() => switchMode("signup")}
                   className="font-semibold transition-opacity hover:opacity-80"
-                  style={{ color: "#6EE7B7" }}
+                  style={{ color: "#16A34A" }}
                 >
                   Create one
                 </button>
@@ -237,7 +237,7 @@ export default function Landing() {
                 <button
                   onClick={() => switchMode("login")}
                   className="font-semibold transition-opacity hover:opacity-80"
-                  style={{ color: "#6EE7B7" }}
+                  style={{ color: "#16A34A" }}
                 >
                   Sign in
                 </button>

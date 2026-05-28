@@ -21,9 +21,9 @@ function relTime(iso: string): string {
 }
 
 const TYPE_COLORS: Record<Alert["type"], string> = {
-  new_filing: "#6EE7B7",
-  signal: "#34D399",
-  form_d: "#6EE7B7",
+  new_filing: "#16A34A",
+  signal: "#22C55E",
+  form_d: "#16A34A",
   warn: "#C9A0A0",
 };
 
@@ -83,14 +83,14 @@ export default function AlertBell() {
       <button
         onClick={() => setOpen(o => !o)}
         className="relative p-1.5 rounded-md transition-colors"
-        style={{ color: unread > 0 ? "#6EE7B7" : "#64748B" }}
+        style={{ color: unread > 0 ? "#16A34A" : "#64748B" }}
         aria-label="Alerts"
       >
         <Bell size={16} />
         {unread > 0 && (
           <span
             className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
-            style={{ background: "#6EE7B7", color: "#0B1A0E" }}
+            style={{ background: "#16A34A", color: "#FFFFFF" }}
           >
             {unread > 9 ? "9+" : unread}
           </span>
@@ -100,17 +100,17 @@ export default function AlertBell() {
       {open && (
         <div
           className="absolute right-0 top-full mt-2 w-80 rounded-xl overflow-hidden shadow-2xl z-50"
-          style={{ background: "#132A1A", border: "1px solid rgba(148,163,184,0.18)" }}
+          style={{ background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.12)" }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(148,163,184,0.1)" }}>
-            <span className="text-xs font-semibold" style={{ color: "#F5F0E6" }}>Alerts</span>
+          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid rgba(0,0,0,0.07)" }}>
+            <span className="text-xs font-semibold" style={{ color: "#1A2416" }}>Alerts</span>
             <div className="flex items-center gap-2">
               {unread > 0 && (
                 <button
                   onClick={handleMarkAllRead}
                   className="text-[10px] transition-colors"
-                  style={{ color: "#94A3B8" }}
+                  style={{ color: "#64748B" }}
                 >
                   Mark all read
                 </button>
@@ -119,7 +119,7 @@ export default function AlertBell() {
                 <button
                   onClick={handleEnableNotifications}
                   className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded"
-                  style={{ background: "rgba(110,231,183,0.08)", color: "#6EE7B7" }}
+                  style={{ background: "rgba(22,163,74,0.06)", color: "#16A34A" }}
                 >
                   <BellOff size={9} />
                   Enable
@@ -132,8 +132,8 @@ export default function AlertBell() {
           <div className="max-h-80 overflow-y-auto">
             {alerts.length === 0 ? (
               <div className="px-4 py-8 text-center">
-                <Bell size={20} className="mx-auto mb-2 opacity-30" style={{ color: "#94A3B8" }} />
-                <p className="text-xs" style={{ color: "#94A3B8" }}>No alerts — add companies to monitoring to get notified</p>
+                <Bell size={20} className="mx-auto mb-2 opacity-30" style={{ color: "#64748B" }} />
+                <p className="text-xs" style={{ color: "#64748B" }}>No alerts — add companies to monitoring to get notified</p>
               </div>
             ) : (
               alerts.map(a => (
@@ -141,8 +141,8 @@ export default function AlertBell() {
                   key={a.id}
                   className="px-4 py-3 cursor-pointer transition-colors"
                   style={{
-                    borderBottom: "1px solid rgba(148,163,184,0.06)",
-                    background: a.read ? "transparent" : "rgba(110,231,183,0.04)",
+                    borderBottom: "1px solid rgba(0,0,0,0.04)",
+                    background: a.read ? "transparent" : "rgba(22,163,74,0.04)",
                   }}
                   onClick={() => handleMarkRead(a.id)}
                 >
@@ -152,13 +152,13 @@ export default function AlertBell() {
                       style={{ background: a.read ? "transparent" : TYPE_COLORS[a.type] }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold truncate" style={{ color: "#F5F0E6" }}>{a.company_name}</p>
-                      <p className="text-[10px] mt-0.5" style={{ color: "#94A3B8" }}>{a.message}</p>
+                      <p className="text-[11px] font-semibold truncate" style={{ color: "#1A2416" }}>{a.company_name}</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: "#64748B" }}>{a.message}</p>
                       <p className="text-[9px] font-mono mt-0.5" style={{ color: "#64748B" }}>{relTime(a.timestamp)}</p>
                     </div>
                     <span
                       className="text-[9px] px-1.5 py-0.5 rounded font-mono shrink-0"
-                      style={{ background: "rgba(148,163,184,0.06)", color: "#64748B" }}
+                      style={{ background: "rgba(0,0,0,0.04)", color: "#64748B" }}
                     >
                       {a.type.replace("_", " ")}
                     </span>
