@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Briefcase, Users, MapPin, Plus, X, ChevronDown, ChevronUp, Trash2, Phone, Mail } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
-const card = { background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" };
-const input = { background: "#F0EDE5", color: "#1A2416", border: "1px solid rgba(0,0,0,0.1)" };
+const card = { background: "var(--bg-surface)", border: "1px solid rgba(0,0,0,0.08)" };
+const input = { background: "var(--bg-surface-alt)", color: "var(--text-primary)", border: "1px solid rgba(0,0,0,0.1)" };
 
 interface Contact { name: string; role: string; email: string; phone: string; }
 interface Advisor {
@@ -66,58 +66,56 @@ export default function AdvisorGraph() {
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-5">
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg" style={{ background: "rgba(22,163,74,0.08)" }}>
-            <Briefcase size={20} style={{ color: "#16A34A" }} />
+          <div className="p-2 rounded-lg" style={{ background: "rgba(27,67,50,0.08)" }}>
+            <Briefcase size={20} style={{ color: "var(--accent)" }} />
           </div>
           <div>
-            <h1 className="font-serif text-2xl font-bold" style={{ color: "#1A2416" }}>Advisor Network</h1>
-            <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>
+            <h1 className="font-serif text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Advisor Network</h1>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
               {advisors.length} firm{advisors.length !== 1 ? "s" : ""} · {advisors.reduce((s, a) => s + a.contacts.length, 0)} contacts
             </p>
           </div>
         </div>
         <button onClick={() => setShowForm(v => !v)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
-          style={{ background: "#16A34A", color: "#FFFFFF" }}>
+          style={{ background: "var(--accent)", color: "#FFFFFF" }}>
           <Plus size={13} /> Add Advisor
         </button>
       </div>
 
-      {/* Add advisor form */}
       {showForm && (
         <div className="rounded-xl p-5 space-y-4" style={card}>
-          <p className="text-xs font-semibold" style={{ color: "#1A2416" }}>New Advisor</p>
+          <p className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>New Advisor</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Firm Name *</label>
+              <label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Firm Name *</label>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 placeholder="e.g. Lincoln International"
                 className="w-full px-3 py-2 rounded-lg text-xs outline-none" style={input} />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Category</label>
+              <label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Category</label>
               <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
                 className="w-full px-3 py-2 rounded-lg text-xs outline-none" style={input}>
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Specialty / Focus</label>
+              <label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Specialty / Focus</label>
               <input value={form.specialty} onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
                 placeholder="e.g. Founder-led LMM exits, Business Services"
                 className="w-full px-3 py-2 rounded-lg text-xs outline-none" style={input} />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Location</label>
+              <label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Location</label>
               <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
                 placeholder="e.g. Chicago, IL"
                 className="w-full px-3 py-2 rounded-lg text-xs outline-none" style={input} />
             </div>
             <div className="md:col-span-2 space-y-1">
-              <label className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Notes</label>
+              <label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Notes</label>
               <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                 placeholder="Deal flow quality, relationship history, sectors they cover..."
                 rows={2} className="w-full px-3 py-2 rounded-lg text-xs outline-none resize-none" style={input} />
@@ -126,81 +124,76 @@ export default function AdvisorGraph() {
           <div className="flex gap-2">
             <button onClick={addAdvisor} disabled={!form.name.trim()}
               className="px-5 py-2 rounded-lg text-xs font-semibold disabled:opacity-50"
-              style={{ background: "#16A34A", color: "#FFFFFF" }}>
+              style={{ background: "var(--accent)", color: "#FFFFFF" }}>
               Save Advisor
             </button>
             <button onClick={() => { setShowForm(false); setForm(emptyAdvisor()); }}
               className="px-4 py-2 rounded-lg text-xs"
-              style={{ background: "#F0EDE5", color: "#64748B", border: "1px solid rgba(0,0,0,0.07)" }}>
+              style={{ background: "var(--bg-surface-alt)", color: "var(--text-secondary)", border: "1px solid rgba(0,0,0,0.07)" }}>
               Cancel
             </button>
           </div>
         </div>
       )}
 
-      {/* Category filter */}
       <div className="flex flex-wrap gap-2">
         {categories.map(c => (
           <button key={c} onClick={() => setFilter(c)}
             className="px-3 py-1.5 rounded-full text-xs transition-colors"
             style={filter === c
-              ? { background: "#16A34A", color: "#FFFFFF", fontWeight: 600 }
-              : { background: "#F0EDE5", color: "#64748B", border: "1px solid rgba(0,0,0,0.07)" }}>
+              ? { background: "var(--accent)", color: "#FFFFFF", fontWeight: 600 }
+              : { background: "var(--bg-surface-alt)", color: "var(--text-secondary)", border: "1px solid rgba(0,0,0,0.07)" }}>
             {c}
           </button>
         ))}
       </div>
 
-      {/* Advisor list */}
       {filtered.length > 0 ? (
         <div className="space-y-2">
           {filtered.map(a => (
             <div key={a.id} className="rounded-lg" style={card}>
-              {/* Main row */}
               <div className="p-4 flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-serif text-base font-semibold" style={{ color: "#1A2416" }}>{a.name}</h3>
+                    <h3 className="font-serif text-base font-semibold" style={{ color: "var(--text-primary)" }}>{a.name}</h3>
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                      style={{ background: "rgba(22,163,74,0.08)", color: "#16A34A" }}>{a.category}</span>
+                      style={{ background: "rgba(27,67,50,0.08)", color: "var(--accent)" }}>{a.category}</span>
                   </div>
-                  {a.specialty && <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>{a.specialty}</p>}
-                  <div className="flex flex-wrap items-center gap-3 mt-2 text-[10px]" style={{ color: "#64748B" }}>
+                  {a.specialty && <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>{a.specialty}</p>}
+                  <div className="flex flex-wrap items-center gap-3 mt-2 text-[10px]" style={{ color: "var(--text-secondary)" }}>
                     {a.location && <span className="flex items-center gap-1"><MapPin size={10} />{a.location}</span>}
                     <span className="flex items-center gap-1"><Users size={10} />{a.contacts.length} contact{a.contacts.length !== 1 ? "s" : ""}</span>
                     <span>Added {a.added}</span>
                   </div>
-                  {a.notes && <p className="text-[11px] mt-2 italic" style={{ color: "#64748B" }}>{a.notes}</p>}
+                  {a.notes && <p className="text-[11px] mt-2 italic" style={{ color: "var(--text-secondary)" }}>{a.notes}</p>}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={() => setExpanded(expanded === a.id ? null : a.id)}
                     className="p-1.5 rounded-md transition-colors"
-                    style={{ color: "#64748B" }}>
+                    style={{ color: "var(--text-secondary)" }}>
                     {expanded === a.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </button>
                   <button onClick={() => removeAdvisor(a.id)}
                     className="p-1.5 rounded-md transition-colors hover:opacity-80"
-                    style={{ color: "#64748B" }}>
+                    style={{ color: "var(--text-secondary)" }}>
                     <Trash2 size={14} />
                   </button>
                 </div>
               </div>
 
-              {/* Expanded contacts panel */}
               {expanded === a.id && (
                 <div className="px-4 pb-4 space-y-3" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                   <div className="pt-3 flex items-center justify-between">
-                    <p className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Contacts</p>
+                    <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Contacts</p>
                     <button onClick={() => setAddingContactFor(addingContactFor === a.id ? null : a.id)}
                       className="flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-md"
-                      style={{ background: "rgba(22,163,74,0.08)", color: "#16A34A" }}>
+                      style={{ background: "rgba(27,67,50,0.08)", color: "var(--accent)" }}>
                       <Plus size={10} /> Add Contact
                     </button>
                   </div>
 
-                  {/* Add contact form */}
                   {addingContactFor === a.id && (
-                    <div className="rounded-lg p-3 space-y-2" style={{ background: "#EAE7DF", border: "1px solid rgba(0,0,0,0.06)" }}>
+                    <div className="rounded-lg p-3 space-y-2" style={{ background: "var(--bg-surface-alt)", border: "1px solid rgba(0,0,0,0.06)" }}>
                       <div className="grid grid-cols-2 gap-2">
                         <input value={contactDraft.name} onChange={e => setContactDraft(c => ({ ...c, name: e.target.value }))}
                           placeholder="Full name *" className="px-2.5 py-1.5 rounded-md text-xs outline-none" style={input} />
@@ -214,32 +207,31 @@ export default function AdvisorGraph() {
                       <div className="flex gap-2">
                         <button onClick={() => addContact(a.id)} disabled={!contactDraft.name.trim()}
                           className="px-3 py-1 rounded-md text-[10px] font-semibold disabled:opacity-50"
-                          style={{ background: "#16A34A", color: "#FFFFFF" }}>Save</button>
+                          style={{ background: "var(--accent)", color: "#FFFFFF" }}>Save</button>
                         <button onClick={() => { setAddingContactFor(null); setContactDraft(emptyContact()); }}
                           className="px-3 py-1 rounded-md text-[10px]"
-                          style={{ background: "#F0EDE5", color: "#64748B" }}>Cancel</button>
+                          style={{ background: "var(--bg-surface-alt)", color: "var(--text-secondary)" }}>Cancel</button>
                       </div>
                     </div>
                   )}
 
-                  {/* Contact cards */}
                   {a.contacts.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {a.contacts.map((c, i) => (
                         <div key={i} className="rounded-md p-3 flex items-start justify-between gap-2"
-                          style={{ background: "#F0EDE5" }}>
+                          style={{ background: "var(--bg-surface-alt)" }}>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium" style={{ color: "#1A2416" }}>{c.name}</p>
-                            {c.role && <p className="text-[10px]" style={{ color: "#64748B" }}>{c.role}</p>}
+                            <p className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{c.name}</p>
+                            {c.role && <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>{c.role}</p>}
                             <div className="flex flex-wrap gap-2 mt-1.5">
                               {c.email && (
                                 <a href={`mailto:${c.email}`} className="flex items-center gap-1 text-[10px] hover:opacity-80"
-                                  style={{ color: "#16A34A" }}>
+                                  style={{ color: "var(--accent)" }}>
                                   <Mail size={9} />{c.email}
                                 </a>
                               )}
                               {c.phone && (
-                                <span className="flex items-center gap-1 text-[10px]" style={{ color: "#64748B" }}>
+                                <span className="flex items-center gap-1 text-[10px]" style={{ color: "var(--text-secondary)" }}>
                                   <Phone size={9} />{c.phone}
                                 </span>
                               )}
@@ -247,14 +239,14 @@ export default function AdvisorGraph() {
                           </div>
                           <button onClick={() => removeContact(a.id, i)}
                             className="shrink-0 opacity-40 hover:opacity-80 transition-opacity"
-                            style={{ color: "#64748B" }}>
+                            style={{ color: "var(--text-secondary)" }}>
                             <X size={12} />
                           </button>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-[10px] py-2" style={{ color: "#64748B" }}>No contacts yet — click Add Contact above.</p>
+                    <p className="text-[10px] py-2" style={{ color: "var(--text-secondary)" }}>No contacts yet — click Add Contact above.</p>
                   )}
                 </div>
               )}
@@ -263,14 +255,14 @@ export default function AdvisorGraph() {
         </div>
       ) : (
         <div className="rounded-xl py-20 text-center" style={card}>
-          <Briefcase size={32} className="mx-auto mb-3 opacity-20" style={{ color: "#16A34A" }} />
-          <p className="text-sm" style={{ color: "#64748B" }}>
+          <Briefcase size={32} className="mx-auto mb-3 opacity-20" style={{ color: "var(--accent)" }} />
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
             {advisors.length === 0 ? "No advisors added yet." : "No advisors in this category."}
           </p>
           {advisors.length === 0 && (
             <button onClick={() => setShowForm(true)}
               className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold mx-auto"
-              style={{ background: "#16A34A", color: "#FFFFFF" }}>
+              style={{ background: "var(--accent)", color: "#FFFFFF" }}>
               <Plus size={13} /> Add Your First Advisor
             </button>
           )}

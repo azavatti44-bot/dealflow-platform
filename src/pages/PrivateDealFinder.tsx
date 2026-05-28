@@ -6,7 +6,7 @@ import { useData } from "@/lib/DataContext";
 
 const WATCHLIST_NAME = "Deal Finder";
 
-const card = { background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" };
+const card = { background: "var(--bg-surface)", border: "1px solid rgba(0,0,0,0.08)" };
 
 const US_STATES = [
   { code: "AL", name: "Alabama" }, { code: "AK", name: "Alaska" }, { code: "AZ", name: "Arizona" },
@@ -28,7 +28,6 @@ const US_STATES = [
   { code: "WI", name: "Wisconsin" }, { code: "WY", name: "Wyoming" },
 ];
 
-// Lower middle market sector presets — keyword searches against company names
 const LMM_SECTORS = [
   { label: "All Sectors", query: "" },
   { label: "Business Services", query: "services consulting staffing" },
@@ -40,7 +39,6 @@ const LMM_SECTORS = [
   { label: "Specialty Distribution", query: "wholesale distribution supply logistics" },
 ];
 
-// LMM deal size ranges (Reg D offering amounts)
 const AMOUNT_RANGES = [
   { label: "All Sizes", min: undefined, max: undefined },
   { label: "< $5M", min: 0, max: 5_000_000 },
@@ -74,10 +72,10 @@ function holdPeriod(dateFiled: string): { years: number; label: string; badge: {
   const filed = new Date(dateFiled);
   const years = Math.floor((Date.now() - filed.getTime()) / (365.25 * 24 * 3600 * 1000));
   let label = `${years}yr hold`;
-  let badge = { bg: "rgba(90,77,58,0.2)", color: "#64748B" };
+  let badge = { bg: "rgba(90,77,58,0.2)", color: "var(--text-secondary)" };
   if (years >= 3 && years <= 7) {
     label = `${years}yr — exit window`;
-    badge = { bg: "rgba(22,163,74,0.12)", color: "#16A34A" };
+    badge = { bg: "rgba(27,67,50,0.12)", color: "var(--accent)" };
   } else if (years > 7) {
     label = `${years}yr — overdue exit`;
     badge = { bg: "rgba(180,60,60,0.15)", color: "#DC2626" };
@@ -89,8 +87,8 @@ export default function PrivateDealFinder() {
   const { addToWatchlist, watchlists } = useData();
   const [stateFilter, setStateFilter] = useState("");
   const [dateRange, setDateRange] = useState("5");
-  const [sector, setSector] = useState(0); // index into LMM_SECTORS
-  const [amountRange, setAmountRange] = useState(0); // index into AMOUNT_RANGES
+  const [sector, setSector] = useState(0);
+  const [amountRange, setAmountRange] = useState(0);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<FormDRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -98,7 +96,6 @@ export default function PrivateDealFinder() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Derive monitored state from watchlist (reactive — no separate useState needed)
   const watchlistCompanies = watchlists.find(w => w.name === WATCHLIST_NAME)?.companies || [];
 
   const doSearch = useCallback(async (newFrom = 0) => {
@@ -130,11 +127,10 @@ export default function PrivateDealFinder() {
     }
   }, [stateFilter, dateRange, sector, amountRange]);
 
-  // Auto-load on mount
   useEffect(() => { doSearch(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleMonitor(name: string) {
-    addMonitored(name);              // keep for alert engine
+    addMonitored(name);
     addToWatchlist(name, WATCHLIST_NAME);
   }
 
@@ -143,20 +139,20 @@ export default function PrivateDealFinder() {
     return yrs >= 3 && yrs <= 7;
   }).length;
 
+  const inputBase = { background: "var(--bg-surface-alt)", color: "var(--text-primary)", border: "1px solid rgba(0,0,0,0.1)" };
+
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-5">
-      {/* Header */}
       <div className="flex items-start gap-3">
-        <div className="p-2 rounded-lg" style={{ background: "rgba(22,163,74,0.08)" }}>
-          <Database size={20} style={{ color: "#16A34A" }} />
+        <div className="p-2 rounded-lg" style={{ background: "rgba(27,67,50,0.08)" }}>
+          <Database size={20} style={{ color: "var(--accent)" }} />
         </div>
         <div>
-          <h1 className="font-serif text-2xl font-bold" style={{ color: "#1A2416" }}>Private Deal Finder</h1>
-          <p className="text-xs mt-0.5" style={{ color: "#64748B" }}>Reg D equity raises — lower middle market companies approaching exit</p>
+          <h1 className="font-serif text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Private Deal Finder</h1>
+          <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Reg D equity raises — lower middle market companies approaching exit</p>
         </div>
       </div>
 
-      {/* Summary stats */}
       {hasSearched && !loading && (
         <div className="grid grid-cols-3 gap-3">
           {[
@@ -165,62 +161,60 @@ export default function PrivateDealFinder() {
             { icon: TrendingUp, label: "Showing", value: results.length },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="rounded-lg p-3 text-center" style={card}>
-              <Icon size={14} className="mx-auto mb-1" style={{ color: "#16A34A" }} />
-              <p className="text-lg font-bold font-mono" style={{ color: "#1A2416" }}>{value}</p>
-              <p className="text-[10px]" style={{ color: "#64748B" }}>{label}</p>
+              <Icon size={14} className="mx-auto mb-1" style={{ color: "var(--accent)" }} />
+              <p className="text-lg font-bold font-mono" style={{ color: "var(--text-primary)" }}>{value}</p>
+              <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>{label}</p>
             </div>
           ))}
         </div>
       )}
 
-      {/* Sector presets */}
       <div className="space-y-2">
-        <p className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>LMM Sector Focus</p>
+        <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>LMM Sector Focus</p>
         <div className="flex flex-wrap gap-2">
           {LMM_SECTORS.map((s, i) => (
             <button key={s.label} onClick={() => { setSector(i); }}
               className="px-3 py-1.5 rounded-full text-xs transition-all"
               style={sector === i
-                ? { background: "#16A34A", color: "#FFFFFF", fontWeight: 600 }
-                : { background: "#F0EDE5", color: "#64748B", border: "1px solid rgba(0,0,0,0.07)" }}>
+                ? { background: "var(--accent)", color: "#FFFFFF", fontWeight: 600 }
+                : { background: "var(--bg-surface-alt)", color: "var(--text-secondary)", border: "1px solid rgba(0,0,0,0.07)" }}>
               {s.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Filters */}
       <div className="rounded-xl p-4 space-y-3" style={card}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="space-y-1">
-            <label className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>State</label>
+            <label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>State</label>
             <select value={stateFilter} onChange={e => setStateFilter(e.target.value)}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#F0EDE5", color: "#1A2416", border: "1px solid rgba(0,0,0,0.1)" }}>
+              style={inputBase}>
               <option value="">All States</option>
               {US_STATES.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Raise Date</label>
+            <label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Raise Date</label>
             <select value={dateRange} onChange={e => setDateRange(e.target.value)}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#F0EDE5", color: "#1A2416", border: "1px solid rgba(0,0,0,0.1)" }}>
+              style={inputBase}>
               {DATE_RANGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Deal Size</label>
+            <label className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>Deal Size</label>
             <select value={amountRange} onChange={e => setAmountRange(Number(e.target.value))}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#F0EDE5", color: "#1A2416", border: "1px solid rgba(0,0,0,0.1)" }}>
+              style={inputBase}>
               {AMOUNT_RANGES.map((o, i) => <option key={i} value={i}>{o.label}</option>)}
             </select>
           </div>
           <div className="flex items-end">
             <button onClick={() => doSearch()} disabled={loading}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-60"
-              style={{ background: "#16A34A", color: "#FFFFFF" }}>
+              style={{ background: "var(--accent)", color: "#FFFFFF" }}>
               {loading ? <Loader2 size={13} className="animate-spin" /> : <Database size={13} />}
               Search
             </button>
@@ -228,15 +222,13 @@ export default function PrivateDealFinder() {
         </div>
       </div>
 
-      {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="animate-spin mr-2" size={18} style={{ color: "#16A34A" }} />
-          <span className="text-xs" style={{ color: "#64748B" }}>Scanning Reg D filings...</span>
+          <Loader2 className="animate-spin mr-2" size={18} style={{ color: "var(--accent)" }} />
+          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Scanning Reg D filings...</span>
         </div>
       )}
 
-      {/* Results */}
       {!loading && results.length > 0 && (
         <div className="space-y-2">
           {results.map((r, i) => {
@@ -246,29 +238,29 @@ export default function PrivateDealFinder() {
               <div key={`${r.accession_no}_${i}`} className="rounded-lg p-4 flex items-center gap-4" style={card}>
                 <div className="flex-1 min-w-0 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-semibold" style={{ color: "#1A2416" }}>{r.company_name || "—"}</span>
+                    <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{r.company_name || "—"}</span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold shrink-0"
-                      style={{ background: "rgba(22,163,74,0.1)", color: "#16A34A" }}>{r.form_type}</span>
+                      style={{ background: "rgba(27,67,50,0.10)", color: "var(--accent)" }}>{r.form_type}</span>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0"
                       style={hp.badge}>{hp.label}</span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono" style={{ color: "#64748B" }}>
+                  <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono" style={{ color: "var(--text-secondary)" }}>
                     <span>{r.state || "—"}</span>
                     <span>Filed {r.date_filed}</span>
                     {r.amount_raised && (
-                      <span className="flex items-center gap-1" style={{ color: "#64748B" }}>
+                      <span className="flex items-center gap-1">
                         <DollarSign size={9} />{formatAmount(r.amount_raised)} raised
                       </span>
                     )}
-                    {r.industry && <span style={{ color: "#64748B" }}>{r.industry}</span>}
+                    {r.industry && <span>{r.industry}</span>}
                   </div>
                 </div>
                 <button onClick={() => handleMonitor(r.company_name)}
                   disabled={isMonitored || !r.company_name}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] shrink-0 transition-colors disabled:opacity-50"
                   style={isMonitored
-                    ? { background: "rgba(22,163,74,0.12)", color: "#22C55E" }
-                    : { background: "rgba(22,163,74,0.08)", color: "#16A34A" }}>
+                    ? { background: "rgba(27,67,50,0.12)", color: "var(--accent-hover)" }
+                    : { background: "rgba(27,67,50,0.08)", color: "var(--accent)" }}>
                   {isMonitored ? <Check size={10} /> : <Plus size={10} />}
                   {isMonitored ? "Monitoring" : "Monitor"}
                 </button>
@@ -278,21 +270,19 @@ export default function PrivateDealFinder() {
         </div>
       )}
 
-      {/* Empty state */}
       {!loading && hasSearched && results.length === 0 && (
         <div className="rounded-xl py-16 text-center" style={card}>
-          <Database size={32} className="mx-auto mb-3 opacity-30" style={{ color: "#16A34A" }} />
-          <p className="text-sm" style={{ color: "#64748B" }}>No Reg D filings found for these filters.</p>
-          <p className="text-xs mt-1" style={{ color: "#64748B" }}>Try broadening the date range or switching to All Sectors.</p>
+          <Database size={32} className="mx-auto mb-3 opacity-30" style={{ color: "var(--accent)" }} />
+          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No Reg D filings found for these filters.</p>
+          <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Try broadening the date range or switching to All Sectors.</p>
         </div>
       )}
 
-      {/* Load More */}
       {!loading && results.length > 0 && results.length < total && (
         <div className="flex justify-center">
           <button onClick={() => doSearch(from + 20)} disabled={loadingMore}
             className="flex items-center gap-2 px-6 py-2 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-60"
-            style={{ background: "#F0EDE5", color: "#16A34A", border: "1px solid rgba(22,163,74,0.15)" }}>
+            style={{ background: "var(--bg-surface-alt)", color: "var(--accent)", border: "1px solid rgba(27,67,50,0.15)" }}>
             {loadingMore ? <Loader2 size={13} className="animate-spin" /> : null}
             Load More ({(total - results.length).toLocaleString()} remaining)
           </button>

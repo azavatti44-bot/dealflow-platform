@@ -14,7 +14,7 @@ const TEMPLATES: Template[] = [
   { id: "8", name: "Schedule 13D", category: "Signal-Triggered", signal_trigger: "change_of_control", subject: "13D filing — strategic implications for {{company}}", body: "Hi {{first_name}},\n\nThe Schedule 13D filing for {{company}} indicates an activist or strategic investor has crossed the 5% threshold. This frequently catalyzes strategic reviews.\n\nWe've advised targets and buyers in activist-driven situations.\n\nWorth a conversation?\n\nThomas", channel: "email", usage_count: 11, conversion_rate: "25%" },
 ];
 
-const card = { background: "#FFFFFF", border: "1px solid rgba(0,0,0,0.08)" };
+const card = { background: "var(--bg-surface)", border: "1px solid rgba(0,0,0,0.08)" };
 
 export default function OutreachHub() {
   const [selected, setSelected] = useState<Template | null>(null);
@@ -30,8 +30,8 @@ export default function OutreachHub() {
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-4">
       <div>
-        <h1 className="font-serif text-2xl font-bold" style={{ color: "#1A2416" }}>Outreach Hub</h1>
-        <p className="text-xs mt-1" style={{ color: "#64748B" }}>Signal-triggered email templates</p>
+        <h1 className="font-serif text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Outreach Hub</h1>
+        <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Signal-triggered email templates</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -42,9 +42,9 @@ export default function OutreachHub() {
           { icon: Zap, label: "Signal Triggers", value: 8 },
         ].map(s => (
           <div key={s.label} className="rounded-lg p-3 text-center" style={card}>
-            <s.icon className="mx-auto mb-1" size={16} style={{ color: "#16A34A" }} />
-            <p className="text-lg font-bold font-mono" style={{ color: "#1A2416" }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "#64748B" }}>{s.label}</p>
+            <s.icon className="mx-auto mb-1" size={16} style={{ color: "var(--accent)" }} />
+            <p className="text-lg font-bold font-mono" style={{ color: "var(--text-primary)" }}>{s.value}</p>
+            <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -53,7 +53,7 @@ export default function OutreachHub() {
         {categories.map(c => (
           <button key={c} onClick={() => setFilter(c)}
             className="px-3 py-1.5 rounded-full text-xs transition-colors"
-            style={filter === c ? { background: "#16A34A", color: "#FFFFFF", fontWeight: 600 } : { background: "#F0EDE5", color: "#64748B", border: "1px solid rgba(0,0,0,0.07)" }}>
+            style={filter === c ? { background: "var(--accent)", color: "#FFFFFF", fontWeight: 600 } : { background: "var(--bg-surface-alt)", color: "var(--text-secondary)", border: "1px solid rgba(0,0,0,0.07)" }}>
             {c === "all" ? "All" : c}
           </button>
         ))}
@@ -65,16 +65,16 @@ export default function OutreachHub() {
             className="rounded-lg p-4 cursor-pointer transition-all hover:-translate-y-0.5" style={card}>
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Mail size={13} style={{ color: "#16A34A" }} />
-                <h3 className="text-sm font-semibold" style={{ color: "#1A2416" }}>{t.name}</h3>
+                <Mail size={13} style={{ color: "var(--accent)" }} />
+                <h3 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{t.name}</h3>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "rgba(22,163,74,0.08)", color: "#16A34A" }}>{t.channel}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "rgba(27,67,50,0.08)", color: "var(--accent)" }}>{t.channel}</span>
             </div>
-            <p className="text-xs line-clamp-2 mb-2" style={{ color: "#64748B" }}>{t.subject}</p>
-            <div className="flex items-center gap-3 text-[10px]" style={{ color: "#64748B" }}>
+            <p className="text-xs line-clamp-2 mb-2" style={{ color: "var(--text-secondary)" }}>{t.subject}</p>
+            <div className="flex items-center gap-3 text-[10px]" style={{ color: "var(--text-secondary)" }}>
               <span className="flex items-center gap-1"><Send size={9} />{t.usage_count}</span>
               <span className="flex items-center gap-1"><TrendingUp size={9} />{t.conversion_rate}</span>
-              <span className="flex items-center gap-1" style={{ color: "#16A34A" }}><Zap size={9} />{t.signal_trigger.replace(/_/g, " ")}</span>
+              <span className="flex items-center gap-1" style={{ color: "var(--accent)" }}><Zap size={9} />{t.signal_trigger.replace(/_/g, " ")}</span>
             </div>
           </div>
         ))}
@@ -82,30 +82,30 @@ export default function OutreachHub() {
 
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }} onClick={() => setSelected(null)}>
-          <div className="rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6" style={{ background: "#FFFFFF", border: "1px solid rgba(148,163,184,0.2)" }} onClick={e => e.stopPropagation()}>
+          <div className="rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto p-6" style={{ background: "var(--bg-surface)", border: "1px solid rgba(0,0,0,0.10)" }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold font-serif" style={{ color: "#1A2416" }}>{selected.name}</h2>
-              <button onClick={() => setSelected(null)} className="text-xs" style={{ color: "#64748B" }}>Close</button>
+              <h2 className="text-lg font-semibold font-serif" style={{ color: "var(--text-primary)" }}>{selected.name}</h2>
+              <button onClick={() => setSelected(null)} className="text-xs" style={{ color: "var(--text-secondary)" }}>Close</button>
             </div>
 
             {selected.subject && (
-              <div className="rounded-lg p-3 mb-3" style={{ background: "#F0EDE5" }}>
-                <p className="text-[10px] mb-1" style={{ color: "#64748B" }}>Subject</p>
-                <p className="text-sm font-mono" style={{ color: "#1A2416" }}>{selected.subject}</p>
+              <div className="rounded-lg p-3 mb-3" style={{ background: "var(--bg-surface-alt)" }}>
+                <p className="text-[10px] mb-1" style={{ color: "var(--text-secondary)" }}>Subject</p>
+                <p className="text-sm font-mono" style={{ color: "var(--text-primary)" }}>{selected.subject}</p>
               </div>
             )}
 
-            <div className="rounded-lg p-4 mb-4" style={{ background: "#F0EDE5" }}>
+            <div className="rounded-lg p-4 mb-4" style={{ background: "var(--bg-surface-alt)" }}>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px]" style={{ color: "#64748B" }}>Body</p>
-                <button onClick={() => copy(selected.body)} className="text-[10px] flex items-center gap-1" style={{ color: "#16A34A" }}>
+                <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>Body</p>
+                <button onClick={() => copy(selected.body)} className="text-[10px] flex items-center gap-1" style={{ color: "var(--accent)" }}>
                   {copied ? <><Check size={10} /> Copied</> : <><Copy size={10} /> Copy</>}
                 </button>
               </div>
-              <pre className="text-sm whitespace-pre-wrap" style={{ color: "#64748B", fontFamily: "Inter, sans-serif", lineHeight: 1.6 }}>{selected.body}</pre>
+              <pre className="text-sm whitespace-pre-wrap" style={{ color: "var(--text-secondary)", fontFamily: "Inter, sans-serif", lineHeight: 1.6 }}>{selected.body}</pre>
             </div>
 
-            <div className="flex items-center gap-4 text-[10px]" style={{ color: "#64748B" }}>
+            <div className="flex items-center gap-4 text-[10px]" style={{ color: "var(--text-secondary)" }}>
               <span className="flex items-center gap-1"><Send size={11} />{selected.usage_count} used</span>
               <span className="flex items-center gap-1"><TrendingUp size={11} />{selected.conversion_rate} conv</span>
               <span className="flex items-center gap-1"><Clock size={11} />~3 min</span>

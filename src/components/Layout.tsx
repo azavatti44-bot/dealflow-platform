@@ -3,7 +3,7 @@ import Navbar from "./Navbar";
 
 export default function Layout() {
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#F7F5EF", color: "#1A2416", fontFamily: "Inter, sans-serif" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-page)", color: "var(--text-primary)" }}>
       <Navbar />
       <main className="flex-1 pt-14">
         <Outlet />

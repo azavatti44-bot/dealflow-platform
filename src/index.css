@@ -2,31 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-page: #F5F1EB;
+  --bg-surface: #FDFCFA;
+  --bg-surface-alt: #EDE9E1;
+  --accent: #1B4332;
+  --accent-hover: #2D6A4F;
+  --text-primary: #1C1917;
+  --text-secondary: #78716C;
+}
+
 @layer base {
   html { scroll-behavior: smooth; }
 
   body {
-    background: #F7F5EF;
-    color: #1A2416;
-    font-family: "Inter", system-ui, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    font-family: "Outfit", "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    background: rgba(22, 163, 74, 0.15);
-    color: #1A2416;
+    background: rgba(27, 67, 50, 0.15);
+    color: var(--text-primary);
   }
 
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: #F0EDE5; }
-  ::-webkit-scrollbar-thumb { background: #CBD5C0; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #A8B8A0; }
+  ::-webkit-scrollbar-track { background: var(--bg-surface-alt); }
+  ::-webkit-scrollbar-thumb { background: rgba(27, 67, 50, 0.22); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(27, 67, 50, 0.38); }
 
-  * { scrollbar-width: thin; scrollbar-color: #CBD5C0 #F0EDE5; }
+  * { scrollbar-width: thin; scrollbar-color: rgba(27,67,50,0.22) var(--bg-surface-alt); }
 }
 
 @layer utilities {
   .font-mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
-  .font-serif { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; }
+  .font-serif { font-family: "Outfit", system-ui, sans-serif; }
 }
