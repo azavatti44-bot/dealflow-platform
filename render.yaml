@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: dealflow-platform
+    name: dealnexa-signals
     runtime: node
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
