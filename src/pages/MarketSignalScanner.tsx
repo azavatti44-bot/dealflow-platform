@@ -1,8 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Radio, Plus, Check, ExternalLink } from "lucide-react";
+import { Loader2, Radio, Plus, Check, ExternalLink, ShoppingBag, RefreshCw } from "lucide-react";
 import { searchEDGARText, type EDGARTextHit } from "@/lib/api";
 import { addMonitored } from "@/lib/alertEngine";
 import { useData } from "@/lib/DataContext";
+import {
+  fetchBrokerListings,
+  formatPrice,
+  daysAgo,
+  BROKER_SOURCES,
+  type BrokerListing,
+} from "@/lib/bizBuySellApi";
 
 const WATCHLIST_NAME = "Market Signals";
 
@@ -60,6 +67,37 @@ function edgarUrl(accession: string): string {
 }
 
 export default function MarketSignalScanner() {
+  const [mainTab, setMainTab] = useState<"edgar" | "listings">("edgar");
+
+  // ── Sell-Side Listings state ──────────────────────────────────────────────
+  const [brokerSource, setBrokerSource] = useState(BROKER_SOURCES[0].key);
+  const [listings, setListings] = useState<BrokerListing[]>([]);
+  const [listingsLoading, setListingsLoading] = useState(false);
+  const [listingsFetchedAt, setListingsFetchedAt] = useState("");
+  const [listingsError, setListingsError] = useState("");
+
+  const loadListings = useCallback(async (source: string) => {
+    setListingsLoading(true);
+    setListingsError("");
+    try {
+      const { items, fetchedAt } = await fetchBrokerListings(source);
+      setListings(items);
+      setListingsFetchedAt(fetchedAt);
+    } catch (err) {
+      setListingsError(err instanceof Error ? err.message : "Failed to fetch listings");
+      setListings([]);
+    } finally {
+      setListingsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mainTab === "listings" && listings.length === 0 && !listingsLoading && !listingsError) {
+      loadListings(brokerSource);
+    }
+  }, [mainTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── EDGAR state ───────────────────────────────────────────────────────────
   const [query, setQuery] = useState(PRESETS[0].query);
   const [formType, setFormType] = useState(PRESETS[0].forms);
   const [dateRange, setDateRange] = useState(90);
@@ -122,23 +160,52 @@ export default function MarketSignalScanner() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-5">
+      {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-lg" style={{ background: "rgba(27,67,50,0.08)" }}>
-            <Radio size={20} style={{ color: "var(--accent)" }} />
+            {mainTab === "edgar" ? <Radio size={20} style={{ color: "var(--accent)" }} /> : <ShoppingBag size={20} style={{ color: "var(--accent)" }} />}
           </div>
           <div>
             <h1 className="font-serif text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Market Signal Scanner</h1>
-            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>Real-time EDGAR full-text search for off-market LMM deal signals</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
+              {mainTab === "edgar" ? "Real-time EDGAR full-text search for off-market LMM deal signals" : "Active sell-side listings from BizBuySell — companies for sale now"}
+            </p>
           </div>
         </div>
-        {hasSearched && !loading && (
+        {mainTab === "edgar" && hasSearched && !loading && (
           <div className="text-right shrink-0">
             <p className="text-lg font-bold font-mono" style={{ color: "var(--accent)" }}>{total.toLocaleString()}</p>
             <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>filings matched</p>
           </div>
         )}
+        {mainTab === "listings" && listings.length > 0 && (
+          <div className="text-right shrink-0">
+            <p className="text-lg font-bold font-mono" style={{ color: "var(--accent)" }}>{listings.length}</p>
+            <p className="text-[10px]" style={{ color: "var(--text-secondary)" }}>active listings</p>
+          </div>
+        )}
       </div>
+
+      {/* Main tab switcher */}
+      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: "var(--bg-surface)", border: "1px solid rgba(0,0,0,0.07)" }}>
+        {(["edgar", "listings"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setMainTab(t)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+            style={mainTab === t
+              ? { background: "var(--accent)", color: "#FFFFFF" }
+              : { background: "transparent", color: "var(--text-secondary)" }}
+          >
+            {t === "edgar" ? <Radio size={12} /> : <ShoppingBag size={12} />}
+            {t === "edgar" ? "EDGAR Signals" : "Sell-Side Listings"}
+          </button>
+        ))}
+      </div>
+
+      {/* ── EDGAR tab ─────────────────────────────────────────────────────── */}
+      {mainTab === "edgar" && <div className="space-y-5">
 
       <div className="space-y-2">
         <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--text-secondary)" }}>LMM Signal Presets</p>
@@ -256,6 +323,164 @@ export default function MarketSignalScanner() {
             {loadingMore ? <Loader2 size={13} className="animate-spin" /> : null}
             Load More ({(total - results.length).toLocaleString()} remaining)
           </button>
+        </div>
+      )}
+
+      </div>} {/* end EDGAR tab */}
+
+      {/* ── Sell-Side Listings tab ────────────────────────────────────────── */}
+      {mainTab === "listings" && <div className="space-y-4">
+
+        {/* Broker source pills + refresh */}
+        <div className="flex flex-wrap gap-2 items-center justify-between">
+          <div className="flex flex-wrap gap-1.5">
+            {BROKER_SOURCES.map(broker => (
+              <button
+                key={broker.key}
+                onClick={() => {
+                  setBrokerSource(broker.key);
+                  loadListings(broker.key);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
+                style={brokerSource === broker.key
+                  ? { background: "var(--accent)", color: "#FFFFFF" }
+                  : { background: "var(--bg-surface)", color: "var(--text-secondary)", border: "1px solid rgba(0,0,0,0.08)" }}
+              >
+                {broker.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => loadListings(brokerSource)}
+            disabled={listingsLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50"
+            style={{ background: "var(--bg-surface-alt)", color: "var(--accent)", border: "1px solid rgba(27,67,50,0.15)" }}
+          >
+            {listingsLoading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+            {listingsLoading ? "Loading…" : "Refresh"}
+          </button>
+        </div>
+
+        {/* Source description */}
+        {(() => {
+          const broker = BROKER_SOURCES.find(b => b.key === brokerSource);
+          return broker ? (
+            <div className="rounded-lg px-3 py-2.5 flex items-center justify-between" style={{ background: "var(--bg-surface)", border: "1px solid rgba(0,0,0,0.07)" }}>
+              <div>
+                <p className="text-[11px] font-semibold" style={{ color: "var(--text-primary)" }}>{broker.focus}</p>
+                <p className="text-[10px] mt-0.5" style={{ color: "var(--text-secondary)" }}>{broker.description}</p>
+              </div>
+              {listingsFetchedAt && (
+                <span className="text-[10px] font-mono shrink-0" style={{ color: "var(--text-secondary)" }}>
+                  {daysAgo(listingsFetchedAt) || "just now"}
+                </span>
+              )}
+            </div>
+          ) : null;
+        })()}
+
+        {/* Error state */}
+        {listingsError && (
+          <div className="rounded-xl px-4 py-3 text-xs" style={{ background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.15)", color: "#DC2626" }}>
+            {listingsError} — BizBuySell may be blocking automated requests. Try refreshing.
+          </div>
+        )}
+
+        {/* Loading */}
+        {listingsLoading && (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="animate-spin mr-2" size={18} style={{ color: "var(--accent)" }} />
+            <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Fetching listings from BizBuySell…</span>
+          </div>
+        )}
+
+        {/* Listings grid */}
+        {!listingsLoading && listings.length > 0 && (
+          <div className="space-y-2">
+            {listings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!listingsLoading && !listingsError && listings.length === 0 && (
+          <div className="rounded-xl py-16 text-center" style={card}>
+            <ShoppingBag size={32} className="mx-auto mb-3 opacity-30" style={{ color: "var(--accent)" }} />
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No listings loaded yet.</p>
+            <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>Select a category above to fetch active sell-side listings.</p>
+          </div>
+        )}
+
+      </div>} {/* end Listings tab */}
+
+    </div>
+  );
+}
+
+function ListingCard({ listing }: { listing: BrokerListing }) {
+  return (
+    <div className="rounded-lg p-4 space-y-2.5" style={{ background: "var(--bg-surface)", border: "1px solid rgba(0,0,0,0.08)" }}>
+      {/* Title row */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{listing.title}</span>
+          {listing.location && (
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono shrink-0" style={{ background: "rgba(27,67,50,0.08)", color: "var(--accent)" }}>
+              {listing.location}
+            </span>
+          )}
+          {listing.pubDate && (
+            <span className="text-[10px] shrink-0" style={{ color: "var(--text-secondary)" }}>{daysAgo(listing.pubDate)}</span>
+          )}
+        </div>
+        <a
+          href={listing.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold shrink-0 transition-opacity hover:opacity-80"
+          style={{ background: "rgba(27,67,50,0.08)", color: "var(--accent)", border: "1px solid rgba(27,67,50,0.12)" }}
+        >
+          <ExternalLink size={10} /> {listing.financialsAvailable ? "View" : "Request CIM"}
+        </a>
+      </div>
+
+      {/* Financials row */}
+      <div className="flex flex-wrap gap-4 text-[10px] font-mono">
+        {listing.financialsAvailable ? (
+          <>
+            {listing.askingPrice !== null && (
+              <span><span style={{ color: "var(--text-secondary)" }}>Ask</span>{" "}<span className="font-bold" style={{ color: "var(--text-primary)" }}>{formatPrice(listing.askingPrice)}</span></span>
+            )}
+            {listing.revenue !== null && (
+              <span><span style={{ color: "var(--text-secondary)" }}>Revenue</span>{" "}<span className="font-bold" style={{ color: "var(--text-primary)" }}>{formatPrice(listing.revenue)}</span></span>
+            )}
+            {listing.cashFlow !== null && (
+              <span><span style={{ color: "var(--text-secondary)" }}>Cash Flow</span>{" "}<span className="font-bold" style={{ color: "var(--accent)" }}>{formatPrice(listing.cashFlow)}</span></span>
+            )}
+            {listing.askingPrice && listing.cashFlow && (
+              <span><span style={{ color: "var(--text-secondary)" }}>Multiple</span>{" "}<span className="font-bold" style={{ color: "var(--text-primary)" }}>{(listing.askingPrice / listing.cashFlow).toFixed(1)}x</span></span>
+            )}
+          </>
+        ) : (
+          <span className="italic" style={{ color: "var(--text-secondary)" }}>Financials available with NDA</span>
+        )}
+      </div>
+
+      {/* Broker row */}
+      {(listing.brokerName || listing.brokerPhone || listing.brokerEmail) && (
+        <div className="flex flex-wrap items-center gap-3 pt-1.5 text-[10px]" style={{ borderTop: "1px solid rgba(0,0,0,0.05)", color: "var(--text-secondary)" }}>
+          {listing.brokerName && <span className="font-medium" style={{ color: "var(--text-primary)" }}>{listing.brokerName}</span>}
+          {listing.brokerPhone && (
+            <a href={`tel:${listing.brokerPhone}`} className="hover:opacity-80 transition-opacity" style={{ color: "var(--accent)" }}>
+              {listing.brokerPhone}
+            </a>
+          )}
+          {listing.brokerEmail && (
+            <a href={`mailto:${listing.brokerEmail}`} className="hover:opacity-80 transition-opacity truncate" style={{ color: "var(--accent)" }}>
+              {listing.brokerEmail}
+            </a>
+          )}
         </div>
       )}
     </div>
