@@ -6,7 +6,7 @@ import { useData } from "@/lib/DataContext";
 
 const WATCHLIST_NAME = "Market Signals";
 
-const card = { background: "#132A1A", border: "1px solid rgba(212,197,169,0.12)" };
+const card = { background: "#132A1A", border: "1px solid rgba(148,163,184,0.12)" };
 
 interface Preset {
   label: string;
@@ -23,7 +23,7 @@ const PRESETS: Preset[] = [
     query: '"strategic alternatives"',
     forms: "8-K,10-K",
     description: "Exploring a sale or merger",
-    color: "#B8860B",
+    color: "#6EE7B7",
   },
   {
     label: "Going Concern",
@@ -37,28 +37,28 @@ const PRESETS: Preset[] = [
     query: '"investment banker" OR "financial advisor retained" OR "engaged a financial advisor"',
     forms: "8-K",
     description: "Active sale process started",
-    color: "#B8860B",
+    color: "#6EE7B7",
   },
   {
     label: "Founder / CEO Transition",
     query: '"chief executive" OR "founder" "transition" OR "succession"',
     forms: "8-K",
     description: "Leadership change = exit signal",
-    color: "#4A7C59",
+    color: "#34D399",
   },
   {
     label: "Exploring Strategic",
     query: '"exploring strategic" OR "evaluating strategic"',
     forms: "8-K,10-K",
     description: "Early-stage process indicator",
-    color: "#8A7D6B",
+    color: "#94A3B8",
   },
   {
     label: "Sale of the Company",
     query: '"sale of the company" OR "sale of our company"',
     forms: "8-K",
     description: "Direct sale announcement",
-    color: "#B8860B",
+    color: "#6EE7B7",
   },
   {
     label: "Chapter 11 / Distress",
@@ -72,14 +72,14 @@ const PRESETS: Preset[] = [
     query: '"key man" OR "key person" OR "founder departure"',
     forms: "8-K,10-K",
     description: "Founder dependency risk",
-    color: "#4A7C59",
+    color: "#34D399",
   },
   {
     label: "Material Agreement",
     query: '"material definitive agreement" "acquisition" OR "merger"',
     forms: "8-K",
     description: "Deal announcement filings",
-    color: "#B8860B",
+    color: "#6EE7B7",
   },
   {
     label: "WARN / Layoffs",
@@ -185,34 +185,34 @@ export default function MarketSignalScanner() {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg" style={{ background: "rgba(184,134,11,0.1)" }}>
-            <Radio size={20} style={{ color: "#B8860B" }} />
+          <div className="p-2 rounded-lg" style={{ background: "rgba(110,231,183,0.1)" }}>
+            <Radio size={20} style={{ color: "#6EE7B7" }} />
           </div>
           <div>
             <h1 className="font-serif text-2xl font-bold" style={{ color: "#F5F0E6" }}>Market Signal Scanner</h1>
-            <p className="text-xs mt-0.5" style={{ color: "#8A7D6B" }}>Real-time EDGAR full-text search for off-market LMM deal signals</p>
+            <p className="text-xs mt-0.5" style={{ color: "#94A3B8" }}>Real-time EDGAR full-text search for off-market LMM deal signals</p>
           </div>
         </div>
         {hasSearched && !loading && (
           <div className="text-right shrink-0">
-            <p className="text-lg font-bold font-mono" style={{ color: "#B8860B" }}>{total.toLocaleString()}</p>
-            <p className="text-[10px]" style={{ color: "#5A4D3A" }}>filings matched</p>
+            <p className="text-lg font-bold font-mono" style={{ color: "#6EE7B7" }}>{total.toLocaleString()}</p>
+            <p className="text-[10px]" style={{ color: "#64748B" }}>filings matched</p>
           </div>
         )}
       </div>
 
       {/* Signal preset grid */}
       <div className="space-y-2">
-        <p className="text-[10px] uppercase tracking-wider" style={{ color: "#5A4D3A" }}>LMM Signal Presets</p>
+        <p className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>LMM Signal Presets</p>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
           {PRESETS.map(p => (
             <button key={p.label} onClick={() => handlePreset(p)}
               className="text-left rounded-lg px-3 py-2.5 transition-all space-y-0.5"
               style={activePreset === p.label
-                ? { background: "rgba(184,134,11,0.15)", border: "1px solid rgba(184,134,11,0.4)" }
-                : { background: "#1A351F", border: "1px solid rgba(212,197,169,0.08)" }}>
-              <p className="text-[11px] font-semibold leading-tight" style={{ color: activePreset === p.label ? "#B8860B" : "#F5F0E6" }}>{p.label}</p>
-              <p className="text-[9px] leading-tight" style={{ color: "#5A4D3A" }}>{p.description}</p>
+                ? { background: "rgba(110,231,183,0.15)", border: "1px solid rgba(110,231,183,0.4)" }
+                : { background: "#1A351F", border: "1px solid rgba(148,163,184,0.08)" }}>
+              <p className="text-[11px] font-semibold leading-tight" style={{ color: activePreset === p.label ? "#6EE7B7" : "#F5F0E6" }}>{p.label}</p>
+              <p className="text-[9px] leading-tight" style={{ color: "#64748B" }}>{p.description}</p>
             </button>
           ))}
         </div>
@@ -220,7 +220,7 @@ export default function MarketSignalScanner() {
 
       {/* Custom search bar */}
       <div className="rounded-xl p-4 space-y-3" style={card}>
-        <p className="text-[10px] uppercase tracking-wider" style={{ color: "#5A4D3A" }}>Custom Search</p>
+        <p className="text-[10px] uppercase tracking-wider" style={{ color: "#64748B" }}>Custom Search</p>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="md:col-span-2 space-y-1">
             <input
@@ -229,27 +229,27 @@ export default function MarketSignalScanner() {
               onKeyDown={e => e.key === "Enter" && handleSearch()}
               placeholder={`"strategic alternatives" OR "investment banker"`}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(212,197,169,0.15)" }}
+              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(148,163,184,0.15)" }}
             />
           </div>
           <div>
             <select value={formType} onChange={e => setFormType(e.target.value)}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(212,197,169,0.15)" }}>
+              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(148,163,184,0.15)" }}>
               {FORM_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
             </select>
           </div>
           <div>
             <select value={dateRange} onChange={e => setDateRange(Number(e.target.value))}
               className="w-full px-3 py-2 rounded-lg text-xs outline-none"
-              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(212,197,169,0.15)" }}>
+              style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(148,163,184,0.15)" }}>
               {DATE_OPTIONS.map(o => <option key={o.days} value={o.days}>{o.label}</option>)}
             </select>
           </div>
         </div>
         <button onClick={handleSearch} disabled={loading || !query.trim()}
           className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-60"
-          style={{ background: "#B8860B", color: "#0B1A0E" }}>
+          style={{ background: "#6EE7B7", color: "#0B1A0E" }}>
           {loading ? <Loader2 size={13} className="animate-spin" /> : <Radio size={13} />}
           Scan EDGAR
         </button>
@@ -258,8 +258,8 @@ export default function MarketSignalScanner() {
       {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="animate-spin mr-2" size={18} style={{ color: "#B8860B" }} />
-          <span className="text-xs" style={{ color: "#8A7D6B" }}>Scanning EDGAR full-text index...</span>
+          <Loader2 className="animate-spin mr-2" size={18} style={{ color: "#6EE7B7" }} />
+          <span className="text-xs" style={{ color: "#94A3B8" }}>Scanning EDGAR full-text index...</span>
         </div>
       )}
 
@@ -275,16 +275,16 @@ export default function MarketSignalScanner() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-semibold" style={{ color: "#F5F0E6" }}>{r.entity_name || "Unknown Entity"}</span>
                     <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold shrink-0"
-                      style={{ background: "rgba(184,134,11,0.12)", color: "#B8860B" }}>{r.form_type}</span>
-                    <span className="text-[10px]" style={{ color: "#5A4D3A" }}>{relDate(r.file_date)}</span>
+                      style={{ background: "rgba(110,231,183,0.12)", color: "#6EE7B7" }}>{r.form_type}</span>
+                    <span className="text-[10px]" style={{ color: "#64748B" }}>{relDate(r.file_date)}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-[10px] font-mono" style={{ color: "#5A4D3A" }}>
+                  <div className="flex items-center gap-3 text-[10px] font-mono" style={{ color: "#64748B" }}>
                     <span>{r.file_date}</span>
                     <span className="truncate">{r.accession_no}</span>
                     {url && (
                       <a href={url} target="_blank" rel="noopener noreferrer"
                         className="flex items-center gap-0.5 hover:opacity-80 transition-opacity"
-                        style={{ color: "#B8860B" }}>
+                        style={{ color: "#6EE7B7" }}>
                         <ExternalLink size={9} /> EDGAR
                       </a>
                     )}
@@ -294,8 +294,8 @@ export default function MarketSignalScanner() {
                   disabled={isMonitored || !r.entity_name}
                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[10px] shrink-0 transition-colors disabled:opacity-50"
                   style={isMonitored
-                    ? { background: "rgba(74,124,89,0.12)", color: "#4A7C59" }
-                    : { background: "rgba(184,134,11,0.1)", color: "#B8860B" }}>
+                    ? { background: "rgba(74,124,89,0.12)", color: "#34D399" }
+                    : { background: "rgba(110,231,183,0.1)", color: "#6EE7B7" }}>
                   {isMonitored ? <Check size={10} /> : <Plus size={10} />}
                   {isMonitored ? "Monitoring" : "Monitor"}
                 </button>
@@ -308,9 +308,9 @@ export default function MarketSignalScanner() {
       {/* Empty state */}
       {!loading && hasSearched && results.length === 0 && (
         <div className="rounded-xl py-16 text-center" style={card}>
-          <Radio size={32} className="mx-auto mb-3 opacity-30" style={{ color: "#B8860B" }} />
-          <p className="text-sm" style={{ color: "#8A7D6B" }}>No filings matched this signal query.</p>
-          <p className="text-xs mt-1" style={{ color: "#5A4D3A" }}>Try broadening the date range or using a different preset.</p>
+          <Radio size={32} className="mx-auto mb-3 opacity-30" style={{ color: "#6EE7B7" }} />
+          <p className="text-sm" style={{ color: "#94A3B8" }}>No filings matched this signal query.</p>
+          <p className="text-xs mt-1" style={{ color: "#64748B" }}>Try broadening the date range or using a different preset.</p>
         </div>
       )}
 
@@ -319,7 +319,7 @@ export default function MarketSignalScanner() {
         <div className="flex justify-center">
           <button onClick={() => doSearch(query, formType, dateRange, from + 10)} disabled={loadingMore}
             className="flex items-center gap-2 px-6 py-2 rounded-lg text-xs font-semibold transition-opacity disabled:opacity-60"
-            style={{ background: "#1A351F", color: "#B8860B", border: "1px solid rgba(184,134,11,0.2)" }}>
+            style={{ background: "#1A351F", color: "#6EE7B7", border: "1px solid rgba(110,231,183,0.2)" }}>
             {loadingMore ? <Loader2 size={13} className="animate-spin" /> : null}
             Load More ({(total - results.length).toLocaleString()} remaining)
           </button>

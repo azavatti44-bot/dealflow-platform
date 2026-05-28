@@ -101,9 +101,9 @@ function fmtMoney(n: number): string {
 }
 
 function scoreBadgeClasses(score: number): string {
-  if (score >= 80) return "bg-[#B8860B] text-[#0B1A0E]";
-  if (score >= 60) return "bg-[#4A7C59] text-[#F5F0E6]";
-  return "bg-[#2A3E2A] text-[#8A7D6B]";
+  if (score >= 80) return "bg-[#6EE7B7] text-[#0B1A0E]";
+  if (score >= 60) return "bg-[#34D399] text-[#F5F0E6]";
+  return "bg-[#2A3E2A] text-[#94A3B8]";
 }
 
 // ---------------------------------------------------------------------------
@@ -162,7 +162,7 @@ function PracticeCard({
       className="rounded-xl p-5 mb-3 transition-shadow duration-150"
       style={{
         background: "#132A1A",
-        border: "1px solid rgba(212,197,169,0.12)",
+        border: "1px solid rgba(148,163,184,0.12)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
       }}
       onMouseEnter={(e) =>
@@ -189,7 +189,7 @@ function PracticeCard({
 
         <span
           className="text-[11px] px-2 py-0.5 rounded font-medium shrink-0 self-center"
-          style={{ background: "rgba(212,197,169,0.08)", color: "#8A7D6B" }}
+          style={{ background: "rgba(148,163,184,0.08)", color: "#94A3B8" }}
         >
           {p.specialty}
         </span>
@@ -197,7 +197,7 @@ function PracticeCard({
         {foundingYearStr && (
           <span
             className="text-[11px] shrink-0 self-center"
-            style={{ color: "#5A4D3A" }}
+            style={{ color: "#64748B" }}
           >
             {foundingYearStr}
           </span>
@@ -211,10 +211,10 @@ function PracticeCard({
           style={{
             color:
               profile.acquisitionScore >= 80
-                ? "#B8860B"
+                ? "#6EE7B7"
                 : profile.acquisitionScore >= 60
-                ? "#4A7C59"
-                : "#5A4D3A",
+                ? "#34D399"
+                : "#64748B",
           }}
         >
           {profile.scoreLabel}
@@ -224,7 +224,7 @@ function PracticeCard({
       {/* ROW 2: Key metrics bar */}
       <div
         className="flex rounded-lg overflow-hidden mb-4"
-        style={{ border: "1px solid rgba(212,197,169,0.08)" }}
+        style={{ border: "1px solid rgba(148,163,184,0.08)" }}
       >
         {[
           {
@@ -248,13 +248,13 @@ function PracticeCard({
             key={i}
             className="flex-1 px-3 py-2.5"
             style={{
-              borderRight: i < 3 ? "1px solid rgba(212,197,169,0.08)" : "none",
+              borderRight: i < 3 ? "1px solid rgba(148,163,184,0.08)" : "none",
               background: "rgba(11,26,14,0.3)",
             }}
           >
             <div
               className="text-[10px] uppercase tracking-wider mb-0.5"
-              style={{ color: "#5A4D3A" }}
+              style={{ color: "#64748B" }}
             >
               {m.label}
             </div>
@@ -273,7 +273,7 @@ function PracticeCard({
         <div className="flex-1 min-w-[240px]">
           <div
             className="text-[10px] font-semibold uppercase tracking-widest mb-1"
-            style={{ color: "#5A4D3A" }}
+            style={{ color: "#64748B" }}
           >
             Why Enticing
           </div>
@@ -285,7 +285,7 @@ function PracticeCard({
         <div className="flex-1 min-w-[240px]">
           <div
             className="text-[10px] font-semibold uppercase tracking-widest mb-1"
-            style={{ color: "#5A4D3A" }}
+            style={{ color: "#64748B" }}
           >
             Approach Angle
           </div>
@@ -298,7 +298,7 @@ function PracticeCard({
       {/* ROW 4: Signals + Contact + Actions */}
       <div
         className="flex justify-between items-start gap-4 flex-wrap pt-3"
-        style={{ borderTop: "1px solid rgba(212,197,169,0.08)" }}
+        style={{ borderTop: "1px solid rgba(148,163,184,0.08)" }}
       >
         {/* Signals */}
         <div className="flex flex-wrap gap-1.5 flex-1">
@@ -308,8 +308,8 @@ function PracticeCard({
               className="text-[10px] px-2 py-0.5 rounded whitespace-nowrap"
               style={{
                 background: "rgba(11,26,14,0.4)",
-                border: "1px solid rgba(212,197,169,0.08)",
-                color: "#8A7D6B",
+                border: "1px solid rgba(148,163,184,0.08)",
+                color: "#94A3B8",
               }}
             >
               {sig}
@@ -329,13 +329,13 @@ function PracticeCard({
               </div>
             )}
             {p.contactName && (
-              <div className="text-[11px]" style={{ color: "#8A7D6B" }}>
+              <div className="text-[11px]" style={{ color: "#94A3B8" }}>
                 {p.contactName}
                 {p.contactTitle ? ` · ${p.contactTitle}` : ""}
               </div>
             )}
             {(p.address || p.city) && (
-              <div className="text-[11px]" style={{ color: "#5A4D3A" }}>
+              <div className="text-[11px]" style={{ color: "#64748B" }}>
                 {[p.address, p.city, p.state].filter(Boolean).join(", ")}
               </div>
             )}
@@ -347,8 +347,8 @@ function PracticeCard({
               disabled={isInPipeline}
               className="px-3 py-1.5 rounded-md text-[11px] font-semibold transition-colors disabled:opacity-60"
               style={{
-                background: isInPipeline ? "#2A3E2A" : "#B8860B",
-                color: isInPipeline ? "#5A4D3A" : "#0B1A0E",
+                background: isInPipeline ? "#2A3E2A" : "#6EE7B7",
+                color: isInPipeline ? "#64748B" : "#0B1A0E",
                 border: "none",
                 cursor: isInPipeline ? "default" : "pointer",
               }}
@@ -362,8 +362,8 @@ function PracticeCard({
               className="px-3 py-1.5 rounded-md text-[11px] font-semibold transition-colors disabled:opacity-60"
               style={{
                 background: "transparent",
-                color: isMonitored ? "#5A4D3A" : "#B8860B",
-                border: `1px solid ${isMonitored ? "rgba(212,197,169,0.08)" : "rgba(184,134,11,0.4)"}`,
+                color: isMonitored ? "#64748B" : "#6EE7B7",
+                border: `1px solid ${isMonitored ? "rgba(148,163,184,0.08)" : "rgba(110,231,183,0.4)"}`,
                 cursor: isMonitored ? "default" : "pointer",
               }}
             >
@@ -372,7 +372,7 @@ function PracticeCard({
 
             <span
               className="text-[10px] font-mono"
-              style={{ color: "#5A4D3A" }}
+              style={{ color: "#64748B" }}
             >
               NPI: {p.npi}
             </span>
@@ -381,7 +381,7 @@ function PracticeCard({
           <button
             onClick={() => setExpanded((v) => !v)}
             className="text-[10px] transition-colors hover:opacity-80"
-            style={{ background: "none", border: "none", color: "#5A4D3A", padding: 0, cursor: "pointer" }}
+            style={{ background: "none", border: "none", color: "#64748B", padding: 0, cursor: "pointer" }}
           >
             {expanded ? "▲ Less details" : "▼ More details"}
           </button>
@@ -394,7 +394,7 @@ function PracticeCard({
           className="mt-3 p-3 rounded-lg grid grid-cols-2 md:grid-cols-3 gap-3"
           style={{
             background: "rgba(11,26,14,0.4)",
-            border: "1px solid rgba(212,197,169,0.08)",
+            border: "1px solid rgba(148,163,184,0.08)",
           }}
         >
           {[
@@ -408,7 +408,7 @@ function PracticeCard({
             <div key={item.label}>
               <div
                 className="text-[10px] uppercase tracking-wider mb-0.5"
-                style={{ color: "#5A4D3A" }}
+                style={{ color: "#64748B" }}
               >
                 {item.label}
               </div>
@@ -528,11 +528,11 @@ export default function HealthcareDealEngine() {
     ? QUICK_SPECIALTIES
     : QUICK_SPECIALTIES.slice(0, 8);
 
-  const cardBg = { background: "#132A1A", border: "1px solid rgba(212,197,169,0.12)" };
+  const cardBg = { background: "#132A1A", border: "1px solid rgba(148,163,184,0.12)" };
   const inputBase = {
     background: "#1A351F",
     color: "#F5F0E6",
-    border: "1px solid rgba(212,197,169,0.15)",
+    border: "1px solid rgba(148,163,184,0.15)",
   };
 
   return (
@@ -541,15 +541,15 @@ export default function HealthcareDealEngine() {
       <div className="flex items-start gap-3">
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: "rgba(184,134,11,0.12)", border: "1px solid rgba(184,134,11,0.25)" }}
+          style={{ background: "rgba(110,231,183,0.12)", border: "1px solid rgba(110,231,183,0.25)" }}
         >
-          <HeartPulse size={18} style={{ color: "#B8860B" }} />
+          <HeartPulse size={18} style={{ color: "#6EE7B7" }} />
         </div>
         <div>
           <h1 className="font-serif text-2xl font-bold" style={{ color: "#F5F0E6" }}>
             Healthcare Practice Finder
           </h1>
-          <p className="text-xs mt-0.5" style={{ color: "#8A7D6B" }}>
+          <p className="text-xs mt-0.5" style={{ color: "#94A3B8" }}>
             Search CMS NPI Registry for practice acquisition targets
           </p>
         </div>
@@ -558,7 +558,7 @@ export default function HealthcareDealEngine() {
       {/* Info banner */}
       <div
         className="rounded-lg px-4 py-3 text-xs"
-        style={{ background: "rgba(11,26,14,0.5)", border: "1px solid rgba(212,197,169,0.08)", color: "#8A7D6B" }}
+        style={{ background: "rgba(11,26,14,0.5)", border: "1px solid rgba(148,163,184,0.08)", color: "#94A3B8" }}
       >
         Practice targets: Physician groups, dental practices, ASCs, and home health agencies. Enter at least one filter below to search.
       </div>
@@ -569,7 +569,7 @@ export default function HealthcareDealEngine() {
         <div>
           <div
             className="text-[10px] font-semibold uppercase tracking-widest mb-2.5"
-            style={{ color: "#5A4D3A" }}
+            style={{ color: "#64748B" }}
           >
             Quick Select Specialty
           </div>
@@ -582,9 +582,9 @@ export default function HealthcareDealEngine() {
                   onClick={() => setSelectedQuickKey(spec.key)}
                   className="px-3 py-1.5 rounded-full text-[11px] font-medium transition-all"
                   style={{
-                    background: selected ? "#B8860B" : "#1A351F",
-                    color: selected ? "#0B1A0E" : "#8A7D6B",
-                    border: selected ? "1px solid #B8860B" : "1px solid rgba(212,197,169,0.1)",
+                    background: selected ? "#6EE7B7" : "#1A351F",
+                    color: selected ? "#0B1A0E" : "#94A3B8",
+                    border: selected ? "1px solid #6EE7B7" : "1px solid rgba(148,163,184,0.1)",
                   }}
                 >
                   {spec.label}
@@ -596,7 +596,7 @@ export default function HealthcareDealEngine() {
             <button
               onClick={() => setShowAllSpecialties((v) => !v)}
               className="flex items-center gap-1 mt-2 text-[11px] font-medium transition-opacity hover:opacity-80"
-              style={{ color: "#B8860B", background: "none", border: "none", cursor: "pointer" }}
+              style={{ color: "#6EE7B7", background: "none", border: "none", cursor: "pointer" }}
             >
               {showAllSpecialties ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
               {showAllSpecialties ? "Show Fewer" : "Show All Specialties"}
@@ -608,7 +608,7 @@ export default function HealthcareDealEngine() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Specialty */}
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
               Specialty
             </label>
             <select
@@ -627,7 +627,7 @@ export default function HealthcareDealEngine() {
 
           {/* State */}
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
               State
             </label>
             <select
@@ -646,7 +646,7 @@ export default function HealthcareDealEngine() {
 
           {/* City */}
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
               City
             </label>
             <input
@@ -654,25 +654,25 @@ export default function HealthcareDealEngine() {
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="e.g. Dallas"
-              className="w-full px-3 py-2 rounded-md text-sm outline-none placeholder:text-[#5A4D3A]"
+              className="w-full px-3 py-2 rounded-md text-sm outline-none placeholder:text-[#64748B]"
               style={inputBase}
             />
           </div>
 
           {/* Entity Type */}
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
               Entity Type
             </label>
-            <div className="flex rounded-md overflow-hidden" style={{ border: "1px solid rgba(212,197,169,0.15)" }}>
+            <div className="flex rounded-md overflow-hidden" style={{ border: "1px solid rgba(148,163,184,0.15)" }}>
               {(["all", "NPI-1", "NPI-2"] as const).map((type) => (
                 <button
                   key={type}
                   onClick={() => setEntityType(type)}
                   className="flex-1 py-2 text-[11px] font-medium transition-colors"
                   style={{
-                    background: entityType === type ? "#B8860B" : "#1A351F",
-                    color: entityType === type ? "#0B1A0E" : "#8A7D6B",
+                    background: entityType === type ? "#6EE7B7" : "#1A351F",
+                    color: entityType === type ? "#0B1A0E" : "#94A3B8",
                     border: "none",
                     cursor: "pointer",
                   }}
@@ -687,7 +687,7 @@ export default function HealthcareDealEngine() {
         {/* Name row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
               Practice / Group Name
             </label>
             <input
@@ -695,12 +695,12 @@ export default function HealthcareDealEngine() {
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
               placeholder="e.g. Texas Oncology..."
-              className="w-full px-3 py-2 rounded-md text-sm outline-none placeholder:text-[#5A4D3A]"
+              className="w-full px-3 py-2 rounded-md text-sm outline-none placeholder:text-[#64748B]"
               style={inputBase}
             />
           </div>
           <div>
-            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+            <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
               Provider Last Name
             </label>
             <input
@@ -708,7 +708,7 @@ export default function HealthcareDealEngine() {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               placeholder="e.g. Smith..."
-              className="w-full px-3 py-2 rounded-md text-sm outline-none placeholder:text-[#5A4D3A]"
+              className="w-full px-3 py-2 rounded-md text-sm outline-none placeholder:text-[#64748B]"
               style={inputBase}
             />
           </div>
@@ -719,7 +719,7 @@ export default function HealthcareDealEngine() {
           onClick={() => doSearch(0)}
           disabled={loading}
           className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-opacity disabled:opacity-50"
-          style={{ background: "#B8860B", color: "#0B1A0E", border: "none", cursor: loading ? "not-allowed" : "pointer" }}
+          style={{ background: "#6EE7B7", color: "#0B1A0E", border: "none", cursor: loading ? "not-allowed" : "pointer" }}
         >
           {loading ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
           Search NPI Registry
@@ -749,7 +749,7 @@ export default function HealthcareDealEngine() {
 
               {/* Revenue */}
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
                   Est. Revenue
                 </label>
                 <select
@@ -769,7 +769,7 @@ export default function HealthcareDealEngine() {
 
               {/* Age */}
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
                   Practice Age
                 </label>
                 <select
@@ -788,7 +788,7 @@ export default function HealthcareDealEngine() {
 
               {/* Score */}
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
                   Min Readiness Score
                 </label>
                 <div className="text-xs mb-1 font-mono" style={{ color: "#F5F0E6" }}>{minScore}</div>
@@ -799,16 +799,16 @@ export default function HealthcareDealEngine() {
                   value={minScore}
                   onChange={(e) => setMinScore(Number(e.target.value))}
                   className="w-full cursor-pointer"
-                  style={{ accentColor: "#B8860B" }}
+                  style={{ accentColor: "#6EE7B7" }}
                 />
-                <div className="flex justify-between text-[10px] mt-0.5" style={{ color: "#5A4D3A" }}>
+                <div className="flex justify-between text-[10px] mt-0.5" style={{ color: "#64748B" }}>
                   <span>0</span><span>50</span><span>100</span>
                 </div>
               </div>
 
               {/* Sort */}
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#5A4D3A" }}>
+                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "#64748B" }}>
                   Sort By
                 </label>
                 <select
@@ -827,7 +827,7 @@ export default function HealthcareDealEngine() {
             {/* Benchmark box */}
             {selectedBenchmark && (
               <div className="rounded-xl p-4 space-y-3" style={cardBg}>
-                <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#5A4D3A" }}>
+                <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#64748B" }}>
                   {selectedBenchmark.label} Benchmarks
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -837,12 +837,12 @@ export default function HealthcareDealEngine() {
                     { label: "EV Multiple", value: `${selectedBenchmark.multipleLow}–${selectedBenchmark.multipleHigh}x` },
                   ].map((b) => (
                     <div key={b.label}>
-                      <div className="text-[9px] uppercase" style={{ color: "#5A4D3A" }}>{b.label}</div>
+                      <div className="text-[9px] uppercase" style={{ color: "#64748B" }}>{b.label}</div>
                       <div className="text-xs font-bold font-mono" style={{ color: "#F5F0E6" }}>{b.value}</div>
                     </div>
                   ))}
                 </div>
-                <div className="text-[11px] leading-relaxed" style={{ color: "#8A7D6B" }}>
+                <div className="text-[11px] leading-relaxed" style={{ color: "#94A3B8" }}>
                   {selectedBenchmark.marketContext}
                 </div>
               </div>
@@ -859,17 +859,17 @@ export default function HealthcareDealEngine() {
                     <div className="text-[15px] font-bold" style={{ color: "#F5F0E6" }}>
                       {filteredProfiles.length} practice{filteredProfiles.length !== 1 ? "s" : ""} found
                       {" · "}
-                      <span className="font-normal" style={{ color: "#8A7D6B" }}>
+                      <span className="font-normal" style={{ color: "#94A3B8" }}>
                         {selectedBenchmark?.label ?? selectedQuickKey} in {stateFilter === "ALL" ? "All States" : stateFilter}
                         {city ? `, ${city}` : ""}
                       </span>
                     </div>
-                    <div className="text-xs mt-0.5" style={{ color: "#5A4D3A" }}>
+                    <div className="text-xs mt-0.5" style={{ color: "#64748B" }}>
                       Showing practices independent sponsors and PE firms are actively targeting.
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs" style={{ color: "#8A7D6B" }}>Sort:</span>
+                    <span className="text-xs" style={{ color: "#94A3B8" }}>Sort:</span>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value as "score" | "age" | "revenue")}
@@ -882,7 +882,7 @@ export default function HealthcareDealEngine() {
                     </select>
                     <span
                       className="px-2 py-1 rounded-md text-[11px]"
-                      style={{ background: "rgba(212,197,169,0.06)", color: "#8A7D6B" }}
+                      style={{ background: "rgba(148,163,184,0.06)", color: "#94A3B8" }}
                     >
                       {total > profiles.length
                         ? `${profiles.length} of ${total.toLocaleString()} total`
@@ -909,7 +909,7 @@ export default function HealthcareDealEngine() {
                     <button
                       onClick={() => doSearch(profiles.length)}
                       className="px-6 py-2.5 rounded-lg text-[13px] font-medium transition-opacity hover:opacity-80"
-                      style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(212,197,169,0.15)", cursor: "pointer" }}
+                      style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(148,163,184,0.15)", cursor: "pointer" }}
                     >
                       Load {Math.min(25, total - profiles.length)} more practices
                     </button>
@@ -925,7 +925,7 @@ export default function HealthcareDealEngine() {
                 <div className="text-base font-semibold" style={{ color: "#F5F0E6" }}>
                   No practices found
                 </div>
-                <div className="text-xs mt-1.5" style={{ color: "#8A7D6B" }}>
+                <div className="text-xs mt-1.5" style={{ color: "#94A3B8" }}>
                   {profiles.length > 0
                     ? `${profiles.length} practice${profiles.length !== 1 ? "s" : ""} fetched but none match the current filters. Relax a filter to see results.`
                     : "Try a different state, city, or specialty."}
@@ -946,7 +946,7 @@ export default function HealthcareDealEngine() {
           <h2 className="font-serif text-xl font-semibold" style={{ color: "#F5F0E6" }}>
             Healthcare Deal Engine
           </h2>
-          <p className="text-xs mt-2 max-w-md mx-auto leading-relaxed" style={{ color: "#8A7D6B" }}>
+          <p className="text-xs mt-2 max-w-md mx-auto leading-relaxed" style={{ color: "#94A3B8" }}>
             Search 7.5 million healthcare providers across all specialties.
             Find independent practices before a banker does.
           </p>
@@ -959,16 +959,16 @@ export default function HealthcareDealEngine() {
               <div
                 key={s.sub}
                 className="px-5 py-3 rounded-lg text-center min-w-[110px]"
-                style={{ background: "rgba(11,26,14,0.4)", border: "1px solid rgba(212,197,169,0.1)" }}
+                style={{ background: "rgba(11,26,14,0.4)", border: "1px solid rgba(148,163,184,0.1)" }}
               >
-                <div className="text-lg font-extrabold font-mono" style={{ color: "#B8860B" }}>
+                <div className="text-lg font-extrabold font-mono" style={{ color: "#6EE7B7" }}>
                   {s.label}
                 </div>
-                <div className="text-xs" style={{ color: "#8A7D6B" }}>{s.sub}</div>
+                <div className="text-xs" style={{ color: "#94A3B8" }}>{s.sub}</div>
               </div>
             ))}
           </div>
-          <p className="text-xs mt-6" style={{ color: "#5A4D3A" }}>
+          <p className="text-xs mt-6" style={{ color: "#64748B" }}>
             Select filters above and click <strong style={{ color: "#F5F0E6" }}>Search NPI Registry</strong>
           </p>
         </div>

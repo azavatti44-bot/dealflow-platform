@@ -26,8 +26,8 @@ const SIGNALS: Sig[] = [
 
 const ICONS: Record<string, typeof Zap> = { Governance: Shield, Financial: FileText, Transaction: TrendingUp, Ownership: UserX, Distress: AlertTriangle, Legal: Scale, Pattern: Activity, Innovation: Lightbulb };
 
-const confBadge = (c: string) => c === "high" ? { bg: "rgba(184,134,11,0.12)", text: "#B8860B" } : c === "medium" ? { bg: "rgba(74,124,89,0.12)", text: "#4A7C59" } : { bg: "rgba(212,197,169,0.06)", text: "#8A7D6B" };
-const card = { background: "#132A1A", border: "1px solid rgba(212,197,169,0.12)" };
+const confBadge = (c: string) => c === "high" ? { bg: "rgba(110,231,183,0.12)", text: "#6EE7B7" } : c === "medium" ? { bg: "rgba(74,124,89,0.12)", text: "#34D399" } : { bg: "rgba(148,163,184,0.06)", text: "#94A3B8" };
+const card = { background: "#132A1A", border: "1px solid rgba(148,163,184,0.12)" };
 
 export default function SignalLibrary() {
   const [filter, setFilter] = useState("all");
@@ -41,44 +41,44 @@ export default function SignalLibrary() {
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-4">
       <div>
         <h1 className="font-serif text-2xl font-bold" style={{ color: "#F5F0E6" }}>Signal Library</h1>
-        <p className="text-xs mt-1" style={{ color: "#8A7D6B" }}>18 signal types across 8 categories</p>
+        <p className="text-xs mt-1" style={{ color: "#94A3B8" }}>18 signal types across 8 categories</p>
       </div>
 
       <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
         {[
-          { label: "Signal Types", value: 18, color: "#B8860B" },
-          { label: "High Confidence", value: SIGNALS.filter(s => s.confidence === "high").length, color: "#B8860B" },
-          { label: "Medium Confidence", value: SIGNALS.filter(s => s.confidence === "medium").length, color: "#4A7C59" },
-          { label: "Emerging", value: SIGNALS.filter(s => s.confidence === "emerging").length, color: "#8A7D6B" },
+          { label: "Signal Types", value: 18, color: "#6EE7B7" },
+          { label: "High Confidence", value: SIGNALS.filter(s => s.confidence === "high").length, color: "#6EE7B7" },
+          { label: "Medium Confidence", value: SIGNALS.filter(s => s.confidence === "medium").length, color: "#34D399" },
+          { label: "Emerging", value: SIGNALS.filter(s => s.confidence === "emerging").length, color: "#94A3B8" },
         ].map(s => (
           <div key={s.label} className="rounded-lg p-3 text-center" style={card}>
             <p className="text-lg font-bold font-mono" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "#8A7D6B" }}>{s.label}</p>
+            <p className="text-[10px]" style={{ color: "#94A3B8" }}>{s.label}</p>
           </div>
         ))}
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={14} style={{ color: "#5A4D3A" }} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2" size={14} style={{ color: "#64748B" }} />
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search signals..."
           className="w-full pl-9 pr-4 py-2 rounded-lg text-xs outline-none"
-          style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(212,197,169,0.15)" }} />
+          style={{ background: "#1A351F", color: "#F5F0E6", border: "1px solid rgba(148,163,184,0.15)" }} />
       </div>
 
       <div className="flex flex-wrap gap-1.5">
         {cats.map(c => (
           <button key={c} onClick={() => setFilter(c)}
             className="px-2.5 py-1 rounded-full text-[11px] transition-colors"
-            style={filter === c ? { background: "#B8860B", color: "#0B1A0E", fontWeight: 600 } : { background: "#1A351F", color: "#8A7D6B", border: "1px solid rgba(212,197,169,0.1)" }}>
+            style={filter === c ? { background: "#6EE7B7", color: "#0B1A0E", fontWeight: 600 } : { background: "#1A351F", color: "#94A3B8", border: "1px solid rgba(148,163,184,0.1)" }}>
             {c === "all" ? "All" : c}
           </button>
         ))}
       </div>
 
       <div className="flex flex-wrap gap-1.5 items-center">
-        <span className="text-[10px] uppercase tracking-wider mr-1" style={{ color: "#5A4D3A" }}>Data Sources:</span>
+        <span className="text-[10px] uppercase tracking-wider mr-1" style={{ color: "#64748B" }}>Data Sources:</span>
         {dataSources.map(ds => (
-          <span key={ds} className="px-2 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(184,134,11,0.08)", color: "#8A7D6B", border: "1px solid rgba(212,197,169,0.08)" }}>{ds}</span>
+          <span key={ds} className="px-2 py-0.5 rounded text-[10px] font-mono" style={{ background: "rgba(110,231,183,0.08)", color: "#94A3B8", border: "1px solid rgba(148,163,184,0.08)" }}>{ds}</span>
         ))}
       </div>
 
@@ -90,14 +90,14 @@ export default function SignalLibrary() {
             <div key={s.id} onClick={() => setSel(s)}
               className="rounded-lg p-4 cursor-pointer transition-all hover:-translate-y-0.5" style={card}>
               <div className="flex items-start gap-3">
-                <div className="p-1.5 rounded shrink-0" style={{ background: "#1A351F" }}><Icon size={14} style={{ color: "#B8860B" }} /></div>
+                <div className="p-1.5 rounded shrink-0" style={{ background: "#1A351F" }}><Icon size={14} style={{ color: "#6EE7B7" }} /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <h3 className="text-sm font-semibold" style={{ color: "#F5F0E6" }}>{s.name}</h3>
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: cb.bg, color: cb.text }}>{s.confidence}</span>
                   </div>
-                  <p className="text-xs line-clamp-2 mb-1" style={{ color: "#8A7D6B" }}>{s.description}</p>
-                  <div className="flex items-center gap-2 text-[10px]" style={{ color: "#5A4D3A" }}>
+                  <p className="text-xs line-clamp-2 mb-1" style={{ color: "#94A3B8" }}>{s.description}</p>
+                  <div className="flex items-center gap-2 text-[10px]" style={{ color: "#64748B" }}>
                     <span className="font-mono">W:{s.weight}</span>
                     <span>{s.accuracy} accuracy</span>
                     <span>{s.data_source}</span>
@@ -111,25 +111,25 @@ export default function SignalLibrary() {
 
       {sel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }} onClick={() => setSel(null)}>
-          <div className="rounded-xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6" style={{ background: "#132A1A", border: "1px solid rgba(212,197,169,0.2)" }} onClick={e => e.stopPropagation()}>
+          <div className="rounded-xl w-full max-w-lg max-h-[80vh] overflow-y-auto p-6" style={{ background: "#132A1A", border: "1px solid rgba(148,163,184,0.2)" }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-semibold font-serif" style={{ color: "#F5F0E6" }}>{sel.name}</h2>
                 <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: confBadge(sel.confidence).bg, color: confBadge(sel.confidence).text }}>{sel.confidence}</span>
               </div>
-              <button onClick={() => setSel(null)} className="text-xs" style={{ color: "#8A7D6B" }}>Close</button>
+              <button onClick={() => setSel(null)} className="text-xs" style={{ color: "#94A3B8" }}>Close</button>
             </div>
             <div className="grid grid-cols-4 gap-2 mb-4">
               {[{ l: "Weight", v: sel.weight }, { l: "Accuracy", v: sel.accuracy }, { l: "Source", v: sel.data_source }, { l: "Lead Time", v: sel.lead_time }].map(d => (
                 <div key={d.l} className="rounded-md p-2 text-center" style={{ background: "#1A351F" }}>
                   <p className="text-sm font-bold font-mono" style={{ color: "#F5F0E6" }}>{d.v}</p>
-                  <p className="text-[9px]" style={{ color: "#5A4D3A" }}>{d.l}</p>
+                  <p className="text-[9px]" style={{ color: "#64748B" }}>{d.l}</p>
                 </div>
               ))}
             </div>
             <div className="space-y-2 text-sm">
-              <p style={{ color: "#8A7D6B" }}>{sel.description}</p>
-              <div><p className="text-[10px] font-semibold mb-1" style={{ color: "#F5F0E6" }}>Examples:</p>{sel.examples.map((e, i) => <p key={i} className="text-xs" style={{ color: "#8A7D6B" }}><span style={{ color: "#B8860B" }}>{i + 1}.</span> {e}</p>)}</div>
+              <p style={{ color: "#94A3B8" }}>{sel.description}</p>
+              <div><p className="text-[10px] font-semibold mb-1" style={{ color: "#F5F0E6" }}>Examples:</p>{sel.examples.map((e, i) => <p key={i} className="text-xs" style={{ color: "#94A3B8" }}><span style={{ color: "#6EE7B7" }}>{i + 1}.</span> {e}</p>)}</div>
             </div>
           </div>
         </div>
