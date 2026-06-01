@@ -3,6 +3,7 @@ import { HeartPulse, Search, AlertTriangle, Loader2, ChevronDown, ChevronUp } fr
 import {
   SPECIALTY_BENCHMARKS,
   searchHealthcareProviders,
+  searchHealthcareProvidersMultiState,
   type PracticeProfile,
 } from "@/lib/healthcareApi";
 import { addMonitored } from "@/lib/alertEngine";
@@ -31,6 +32,11 @@ const QUICK_SPECIALTIES: { key: string; label: string; benchmark: string }[] = [
   { key: "medspa", label: "MedSpa", benchmark: "medspa" },
   { key: "home_health", label: "Home Health", benchmark: "home_health" },
   { key: "pharmacy", label: "Pharmacy", benchmark: "pharmacy" },
+  { key: "physical_therapy", label: "Physical Therapy", benchmark: "physical_therapy" },
+  { key: "mental_health", label: "Mental Health", benchmark: "mental_health" },
+  { key: "substance_use", label: "Substance Use", benchmark: "substance_use" },
+  { key: "womens_health", label: "Women's Health", benchmark: "womens_health" },
+  { key: "infusion", label: "Infusion", benchmark: "infusion" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -94,12 +100,6 @@ const US_STATES = [
 // ---------------------------------------------------------------------------
 // Formatting helpers
 // ---------------------------------------------------------------------------
-function fmtMoney(n: number): string {
-  if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return `$${Math.round(n / 1000)}k`;
-  return `$${n}`;
-}
-
 function scoreBadgeStyle(score: number) {
   if (score >= 80) return { background: "var(--accent)", color: "#FFFFFF" };
   if (score >= 60) return { background: "var(--accent-hover)", color: "#FFFFFF" };
@@ -109,18 +109,6 @@ function scoreBadgeStyle(score: number) {
 // ---------------------------------------------------------------------------
 // Filters
 // ---------------------------------------------------------------------------
-function passesRevenueFilter(profile: PracticeProfile, filter: string): boolean {
-  const low = profile.revenueRangeLow;
-  switch (filter) {
-    case "under1m": return low < 1000000;
-    case "1m_3m": return low >= 750000 && low < 3000000;
-    case "3m_10m": return low >= 2250000 && low < 10000000;
-    case "10m_30m": return low >= 7500000 && low < 30000000;
-    case "30m_plus": return low >= 22500000;
-    default: return true;
-  }
-}
-
 function passesAgeFilter(profile: PracticeProfile, filter: string): boolean {
   switch (filter) {
     case "7": return profile.practiceAge >= 7;
@@ -181,11 +169,21 @@ function PracticeCard({
           {profile.acquisitionScore}
         </span>
 
-        <span
-          className="text-[17px] font-bold flex-1 min-w-0 leading-snug"
-          style={{ color: "var(--text-primary)" }}
-        >
-          {p.name}
+        <span className="flex-1 min-w-0">
+          <span
+            className="text-[17px] font-bold leading-snug block"
+            style={{ color: "var(--text-primary)" }}
+          >
+            {p.name}
+          </span>
+          {p.dba && p.dba.toLowerCase() !== p.name.toLowerCase() && (
+            <span
+              className="text-[11px] block mt-0.5"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              d/b/a {p.dba}
+            </span>
+          )}
         </span>
 
         <span
@@ -229,20 +227,20 @@ function PracticeCard({
       >
         {[
           {
-            label: "Est. Revenue",
-            value: `${fmtMoney(profile.revenueRangeLow)} – ${fmtMoney(profile.revenueRangeHigh)}`,
+            label: "Location",
+            value: [p.city, p.state].filter(Boolean).join(", ") || "—",
           },
           {
-            label: "Est. EBITDA",
-            value: `${fmtMoney(profile.ebitdaRangeLow)} – ${fmtMoney(profile.ebitdaRangeHigh)}`,
+            label: "Entity Type",
+            value: p.enumType === "NPI-2" ? "Organization" : "Individual",
           },
           {
-            label: "EV Multiple",
-            value: `${profile.impliedMultipleLow}–${profile.impliedMultipleHigh}x`,
+            label: "Founded",
+            value: p.foundingYear > 0 ? String(p.foundingYear) : "—",
           },
           {
-            label: "Providers",
-            value: `~${profile.estimatedProviders} provider${profile.estimatedProviders !== 1 ? "s" : ""}`,
+            label: "NPI Updated",
+            value: p.lastUpdated || "—",
           },
         ].map((m, i) => (
           <div
@@ -340,6 +338,27 @@ function PracticeCard({
                 {[p.address, p.city, p.state].filter(Boolean).join(", ")}
               </div>
             )}
+            {p.website ? (
+              <a
+                href={p.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
+                style={{ color: "var(--accent)" }}
+              >
+                🌐 {p.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+              </a>
+            ) : (
+              <a
+                href={`https://www.google.com/search?q=${encodeURIComponent(`${p.dba || p.name} ${p.city} ${p.state}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] inline-flex items-center gap-1 hover:opacity-80 transition-opacity"
+                style={{ color: "var(--accent)" }}
+              >
+                🔎 Look up online ↗
+              </a>
+            )}
           </div>
 
           <div className="flex gap-2 items-center flex-wrap justify-end">
@@ -436,15 +455,15 @@ export default function HealthcareDealEngine() {
 
   const [selectedQuickKey, setSelectedQuickKey] = useState("all");
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
-  const [stateFilter, setStateFilter] = useState("TX");
+  const [selectedStates, setSelectedStates] = useState<string[]>(["TX"]);
+  const [isMultiState, setIsMultiState] = useState(false);
   const [city, setCity] = useState("");
   const [entityType, setEntityType] = useState<"all" | "NPI-1" | "NPI-2">("all");
   const [orgName, setOrgName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [revenueFilter, setRevenueFilter] = useState("any");
   const [ageFilter, setAgeFilter] = useState("any");
   const [minScore, setMinScore] = useState(0);
-  const [sortBy, setSortBy] = useState<"score" | "age" | "revenue">("score");
+  const [sortBy, setSortBy] = useState<"score" | "age">("score");
   const [loading, setLoading] = useState(false);
   const [profiles, setProfiles] = useState<PracticeProfile[]>([]);
   const [total, setTotal] = useState(0);
@@ -453,6 +472,22 @@ export default function HealthcareDealEngine() {
   const [addedToPipeline, setAddedToPipeline] = useState<Set<string>>(new Set());
 
   const selectedBenchmark = SPECIALTY_BENCHMARKS[QUICK_SPECIALTIES.find(s => s.key === selectedQuickKey)?.benchmark || "all"];
+
+  function addState(code: string) {
+    setSelectedStates((prev) => {
+      if (code === "ALL") return ["ALL"];
+      const withoutAll = prev.filter((c) => c !== "ALL");
+      if (withoutAll.includes(code)) return withoutAll;
+      return [...withoutAll, code];
+    });
+  }
+
+  function removeState(code: string) {
+    setSelectedStates((prev) => {
+      const next = prev.filter((c) => c !== code);
+      return next.length ? next : ["ALL"];
+    });
+  }
 
   async function doSearch(newSkip = 0) {
     if (newSkip === 0) {
@@ -463,21 +498,40 @@ export default function HealthcareDealEngine() {
     }
     try {
       const quick = QUICK_SPECIALTIES.find((s) => s.key === selectedQuickKey);
-      const { total: t, profiles: p } = await searchHealthcareProviders({
-        specialtyKey: quick?.benchmark || "all",
-        state: stateFilter,
-        city: city.trim() || undefined,
-        limit: 25,
-        skip: newSkip,
-        entityType,
-        orgName: orgName.trim() || undefined,
-        lastName: lastName.trim() || undefined,
-      });
-      if (newSkip === 0) {
+      const specialtyKey = quick?.benchmark || "all";
+      const multi = selectedStates.length > 1;
+      setIsMultiState(multi);
+
+      if (multi) {
+        // Sweep several states in parallel (no incremental paging)
+        const { total: t, profiles: p } = await searchHealthcareProvidersMultiState({
+          specialtyKey,
+          states: selectedStates,
+          city: city.trim() || undefined,
+          limitPerState: 20,
+          entityType,
+          orgName: orgName.trim() || undefined,
+          lastName: lastName.trim() || undefined,
+        });
         setProfiles(p);
         setTotal(t);
       } else {
-        setProfiles((prev) => [...prev, ...p]);
+        const { total: t, profiles: p } = await searchHealthcareProviders({
+          specialtyKey,
+          state: selectedStates[0] || "ALL",
+          city: city.trim() || undefined,
+          limit: 25,
+          skip: newSkip,
+          entityType,
+          orgName: orgName.trim() || undefined,
+          lastName: lastName.trim() || undefined,
+        });
+        if (newSkip === 0) {
+          setProfiles(p);
+          setTotal(t);
+        } else {
+          setProfiles((prev) => [...prev, ...p]);
+        }
       }
     } catch (err: any) {
       setError(err.message || "NPI Registry unavailable — try again in a moment.");
@@ -489,13 +543,11 @@ export default function HealthcareDealEngine() {
 
   // Client-side filtering & sorting
   const filteredProfiles = profiles
-    .filter((p) => passesRevenueFilter(p, revenueFilter))
     .filter((p) => passesAgeFilter(p, ageFilter))
     .filter((p) => p.acquisitionScore >= minScore)
     .sort((a, b) => {
-      if (sortBy === "score") return b.acquisitionScore - a.acquisitionScore;
       if (sortBy === "age") return b.practiceAge - a.practiceAge;
-      return b.revenueRangeHigh - a.revenueRangeHigh;
+      return b.acquisitionScore - a.acquisitionScore;
     });
 
   function handleAddPipeline(profile: PracticeProfile) {
@@ -626,23 +678,45 @@ export default function HealthcareDealEngine() {
             </select>
           </div>
 
-          {/* State */}
+          {/* State(s) */}
           <div>
             <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              State
+              State{selectedStates.filter((c) => c !== "ALL").length > 1 ? "s" : ""}
             </label>
             <select
-              value={stateFilter}
-              onChange={(e) => setStateFilter(e.target.value)}
+              value=""
+              onChange={(e) => { if (e.target.value) addState(e.target.value); }}
               className="w-full px-3 py-2 rounded-md text-sm outline-none cursor-pointer"
               style={inputBase}
             >
+              <option value="" style={{ background: "var(--bg-surface-alt)", color: "var(--text-primary)" }}>
+                Add state…
+              </option>
               {US_STATES.map((s) => (
                 <option key={s.code} value={s.code} style={{ background: "var(--bg-surface-alt)", color: "var(--text-primary)" }}>
                   {s.name}
                 </option>
               ))}
             </select>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {selectedStates.map((code) => (
+                <span
+                  key={code}
+                  className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full text-[11px] font-medium"
+                  style={{ background: "rgba(27,67,50,0.10)", color: "var(--accent)" }}
+                >
+                  {code === "ALL" ? "All States" : code}
+                  <button
+                    onClick={() => removeState(code)}
+                    className="hover:opacity-70 transition-opacity"
+                    style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", padding: 0, lineHeight: 1 }}
+                    aria-label={`Remove ${code}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
           </div>
 
           {/* City */}
@@ -748,26 +822,6 @@ export default function HealthcareDealEngine() {
                 Refine Results
               </div>
 
-              {/* Revenue */}
-              <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--text-secondary)" }}>
-                  Est. Revenue
-                </label>
-                <select
-                  value={revenueFilter}
-                  onChange={(e) => setRevenueFilter(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md text-xs outline-none cursor-pointer"
-                  style={inputBase}
-                >
-                  <option value="any" style={{ background: "var(--bg-surface-alt)" }}>Any size</option>
-                  <option value="under1m" style={{ background: "var(--bg-surface-alt)" }}>Under $1M</option>
-                  <option value="1m_3m" style={{ background: "var(--bg-surface-alt)" }}>$1M – $3M</option>
-                  <option value="3m_10m" style={{ background: "var(--bg-surface-alt)" }}>$3M – $10M</option>
-                  <option value="10m_30m" style={{ background: "var(--bg-surface-alt)" }}>$10M – $30M</option>
-                  <option value="30m_plus" style={{ background: "var(--bg-surface-alt)" }}>$30M+</option>
-                </select>
-              </div>
-
               {/* Age */}
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-widest mb-1.5" style={{ color: "var(--text-secondary)" }}>
@@ -814,34 +868,21 @@ export default function HealthcareDealEngine() {
                 </label>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as "score" | "age" | "revenue")}
+                  onChange={(e) => setSortBy(e.target.value as "score" | "age")}
                   className="w-full px-3 py-2 rounded-md text-xs outline-none cursor-pointer"
                   style={inputBase}
                 >
                   <option value="score" style={{ background: "var(--bg-surface-alt)" }}>Readiness Score</option>
                   <option value="age" style={{ background: "var(--bg-surface-alt)" }}>Practice Age</option>
-                  <option value="revenue" style={{ background: "var(--bg-surface-alt)" }}>Est. Revenue</option>
                 </select>
               </div>
             </div>
 
-            {/* Benchmark box */}
+            {/* Market context box */}
             {selectedBenchmark && (
-              <div className="rounded-xl p-4 space-y-3" style={cardBg}>
+              <div className="rounded-xl p-4 space-y-2" style={cardBg}>
                 <div className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-secondary)" }}>
-                  {selectedBenchmark.label} Benchmarks
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Rev/Provider", value: fmtMoney(selectedBenchmark.revenuePerProvider) },
-                    { label: "EBITDA Margin", value: `${Math.round(selectedBenchmark.ebitdaMarginLow * 100)}–${Math.round(selectedBenchmark.ebitdaMarginHigh * 100)}%` },
-                    { label: "EV Multiple", value: `${selectedBenchmark.multipleLow}–${selectedBenchmark.multipleHigh}x` },
-                  ].map((b) => (
-                    <div key={b.label}>
-                      <div className="text-[9px] uppercase" style={{ color: "var(--text-secondary)" }}>{b.label}</div>
-                      <div className="text-xs font-bold font-mono" style={{ color: "var(--text-primary)" }}>{b.value}</div>
-                    </div>
-                  ))}
+                  {selectedBenchmark.label} Market Context
                 </div>
                 <div className="text-[11px] leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                   {selectedBenchmark.marketContext}
@@ -861,7 +902,7 @@ export default function HealthcareDealEngine() {
                       {filteredProfiles.length} practice{filteredProfiles.length !== 1 ? "s" : ""} found
                       {" · "}
                       <span className="font-normal" style={{ color: "var(--text-secondary)" }}>
-                        {selectedBenchmark?.label ?? selectedQuickKey} in {stateFilter === "ALL" ? "All States" : stateFilter}
+                        {selectedBenchmark?.label ?? selectedQuickKey} in {selectedStates.includes("ALL") ? "All States" : selectedStates.join(", ")}
                         {city ? `, ${city}` : ""}
                       </span>
                     </div>
@@ -873,13 +914,12 @@ export default function HealthcareDealEngine() {
                     <span className="text-xs" style={{ color: "var(--text-secondary)" }}>Sort:</span>
                     <select
                       value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as "score" | "age" | "revenue")}
+                      onChange={(e) => setSortBy(e.target.value as "score" | "age")}
                       className="px-2 py-1 rounded-md text-xs outline-none cursor-pointer"
                       style={inputBase}
                     >
                       <option value="score" style={{ background: "var(--bg-surface-alt)" }}>Score</option>
                       <option value="age" style={{ background: "var(--bg-surface-alt)" }}>Age</option>
-                      <option value="revenue" style={{ background: "var(--bg-surface-alt)" }}>Revenue</option>
                     </select>
                     <span
                       className="px-2 py-1 rounded-md text-[11px]"
@@ -905,7 +945,7 @@ export default function HealthcareDealEngine() {
                 ))}
 
                 {/* Load more */}
-                {total > profiles.length && (
+                {!isMultiState && total > profiles.length && (
                   <div className="text-center mt-4">
                     <button
                       onClick={() => doSearch(profiles.length)}

@@ -24,6 +24,8 @@ export interface EDGARTextHit {
   form_type: string;
   file_date: string;
   accession_no: string;
+  cik: string;
+  doc: string;
   excerpt?: string;
 }
 
@@ -316,11 +318,14 @@ export async function searchEDGARText(query: string, opts?: { forms?: string; st
     const hits: unknown[] = data?.hits?.hits || [];
     const results = hits.map((h: unknown) => {
       const src = (h as Record<string, unknown>)._source as Record<string, unknown> || {};
+      const id = String((h as Record<string, unknown>)._id || "");
       return {
         entity_name: extractEntityName(src),
         form_type: String(src.form || ""),
         file_date: String(src.file_date || ""),
         accession_no: String(src.adsh || ""),
+        cik: Array.isArray(src.ciks) && src.ciks.length ? String(src.ciks[0]) : "",
+        doc: id.includes(":") ? id.split(":")[1] : "",
       };
     });
     return { total, results };

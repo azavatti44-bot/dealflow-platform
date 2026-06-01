@@ -34,6 +34,11 @@ const PRESETS: Preset[] = [
   { label: "Key Man / Founder Exit", query: '"key man" OR "key person" OR "founder departure"', forms: "8-K,10-K", description: "Founder dependency risk", color: "var(--accent-hover)" },
   { label: "Material Agreement", query: '"material definitive agreement" "acquisition" OR "merger"', forms: "8-K", description: "Deal announcement filings", color: "var(--accent)" },
   { label: "WARN / Layoffs", query: '"WARN Act" OR "workforce reduction" OR "reduction in force"', forms: "8-K,10-K", description: "Operational contraction signal", color: "#DC2626" },
+  { label: "Clinical Research Centers", query: '"clinical research" OR "clinical trial site" OR "research site network" OR "site management organization"', forms: "8-K,10-K", description: "Clinical research site operators", color: "var(--accent)" },
+  { label: "Infusion / Specialty", query: '"infusion" OR "infusion therapy" OR "ambulatory infusion"', forms: "8-K,10-K", description: "Infusion center operators", color: "var(--accent)" },
+  { label: "Behavioral / Substance Use", query: '"substance use" OR "addiction treatment" OR "behavioral health" OR "outpatient treatment"', forms: "8-K,10-K", description: "Mental health & SUD providers", color: "var(--accent-hover)" },
+  { label: "Women's Health", query: '"women\'s health" OR "fertility" OR "obstetrics" OR "reproductive health"', forms: "8-K,10-K", description: "Women's health & fertility-adjacent", color: "var(--accent)" },
+  { label: "Physical Therapy / Rehab", query: '"physical therapy" OR "outpatient rehabilitation" OR "rehabilitation services"', forms: "8-K,10-K", description: "Outpatient PT & rehab roll-ups", color: "var(--accent-hover)" },
 ];
 
 const FORM_OPTIONS = ["8-K", "10-K", "10-Q", "8-K,10-K", "All"];
@@ -60,10 +65,15 @@ function relDate(iso: string): string {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
-function edgarUrl(accession: string): string {
-  if (!accession) return "";
-  const clean = accession.replace(/-/g, "");
-  return `https://www.sec.gov/Archives/edgar/data/0/${clean}/`;
+function edgarUrl(hit: EDGARTextHit): string {
+  if (!hit.accession_no) return "";
+  const cik = (hit.cik || "").replace(/^0+/, "");
+  if (!cik) return "";
+  const accNoDash = hit.accession_no.replace(/-/g, "");
+  // Link straight to the primary document when we have it, else the filing index
+  return hit.doc
+    ? `https://www.sec.gov/Archives/edgar/data/${cik}/${accNoDash}/${hit.doc}`
+    : `https://www.sec.gov/Archives/edgar/data/${cik}/${accNoDash}/${hit.accession_no}-index.htm`;
 }
 
 export default function MarketSignalScanner() {
@@ -268,9 +278,9 @@ export default function MarketSignalScanner() {
 
       {!loading && results.length > 0 && (
         <div className="space-y-2">
-          {results.map((r, i) => {
+          {[...results].sort((a, b) => (b.file_date || "").localeCompare(a.file_date || "")).map((r, i) => {
             const isMonitored = watchlistCompanies.includes(r.entity_name);
-            const url = edgarUrl(r.accession_no);
+            const url = edgarUrl(r);
             return (
               <div key={`${r.accession_no}_${i}`} className="rounded-lg p-4 flex items-center gap-4" style={card}>
                 <div className="flex-1 min-w-0 space-y-1.5">
@@ -398,7 +408,12 @@ export default function MarketSignalScanner() {
         {!listingsLoading && listings.length > 0 && (
           <div className="space-y-2">
             {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCard
+                key={listing.id}
+                listing={listing}
+                isMonitored={watchlistCompanies.includes(listing.title)}
+                onMonitor={() => handleMonitor(listing.title)}
+              />
             ))}
           </div>
         )}
@@ -418,7 +433,7 @@ export default function MarketSignalScanner() {
   );
 }
 
-function ListingCard({ listing }: { listing: BrokerListing }) {
+function ListingCard({ listing, isMonitored, onMonitor }: { listing: BrokerListing; isMonitored: boolean; onMonitor: () => void }) {
   return (
     <div className="rounded-lg p-4 space-y-2.5" style={{ background: "var(--bg-surface)", border: "1px solid rgba(0,0,0,0.08)" }}>
       {/* Title row */}
@@ -434,15 +449,28 @@ function ListingCard({ listing }: { listing: BrokerListing }) {
             <span className="text-[10px] shrink-0" style={{ color: "var(--text-secondary)" }}>{daysAgo(listing.pubDate)}</span>
           )}
         </div>
-        <a
-          href={listing.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold shrink-0 transition-opacity hover:opacity-80"
-          style={{ background: "rgba(27,67,50,0.08)", color: "var(--accent)", border: "1px solid rgba(27,67,50,0.12)" }}
-        >
-          <ExternalLink size={10} /> {listing.financialsAvailable ? "View" : "Request CIM"}
-        </a>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={onMonitor}
+            disabled={isMonitored}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-colors disabled:opacity-60"
+            style={isMonitored
+              ? { background: "rgba(27,67,50,0.12)", color: "var(--accent-hover)" }
+              : { background: "rgba(27,67,50,0.08)", color: "var(--accent)", border: "1px solid rgba(27,67,50,0.12)" }}
+          >
+            {isMonitored ? <Check size={10} /> : <Plus size={10} />}
+            {isMonitored ? "Monitoring" : "Monitor"}
+          </button>
+          <a
+            href={listing.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-opacity hover:opacity-80"
+            style={{ background: "rgba(27,67,50,0.08)", color: "var(--accent)", border: "1px solid rgba(27,67,50,0.12)" }}
+          >
+            <ExternalLink size={10} /> {listing.financialsAvailable ? "View" : "Request CIM"}
+          </a>
+        </div>
       </div>
 
       {/* Financials row */}

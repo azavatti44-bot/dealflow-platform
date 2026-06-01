@@ -17,6 +17,8 @@ export interface NPIProvider {
   foundingYear: number;
   lastUpdated: string;
   licenseState: string;
+  dba: string;       // "Doing Business As" brand name (real NPI other_names data)
+  website: string;   // only populated if NPI carries a URL endpoint (rare)
 }
 
 export interface PracticeProfile {
@@ -218,6 +220,66 @@ export const SPECIALTY_BENCHMARKS: Record<string, SpecialtyBenchmark> = {
       "Surgical practices with ASC ownership trade at significant premiums — outpatient shift and payer preference for lower-cost settings drive demand.",
     icon: "🪡",
   },
+  physical_therapy: {
+    label: "Physical Therapy",
+    taxonomyQuery: "Physical Therapist",
+    revenuePerProvider: 250000,
+    ebitdaMarginLow: 0.12,
+    ebitdaMarginHigh: 0.20,
+    multipleLow: 5,
+    multipleHigh: 8,
+    marketContext:
+      "Outpatient physical therapy is in an active MSO roll-up cycle — recurring visit volume, aging-population and sports-medicine demand, and fragmented single-clinic ownership make it a favored platform-and-tuck-in vertical across the Southeast.",
+    icon: "🏃",
+  },
+  mental_health: {
+    label: "Mental Health",
+    taxonomyQuery: "Mental Health*",
+    revenuePerProvider: 200000,
+    ebitdaMarginLow: 0.15,
+    ebitdaMarginHigh: 0.26,
+    multipleLow: 6,
+    multipleHigh: 10,
+    marketContext:
+      "Structural demand-supply imbalance, telehealth expansion, and improving commercial reimbursement make outpatient mental health one of the most active consolidation verticals — counselor, psychologist, and group-practice models all in play.",
+    icon: "🧠",
+  },
+  substance_use: {
+    label: "Substance Use",
+    taxonomyQuery: "Substance Abuse*",
+    revenuePerProvider: 550000,
+    ebitdaMarginLow: 0.18,
+    ebitdaMarginHigh: 0.30,
+    multipleLow: 7,
+    multipleHigh: 11,
+    marketContext:
+      "Outpatient, in-network substance-use treatment with a commercial-payer mix offers recurring census and durable demand — the network-contracted outpatient model is favored over cash-pay residential for predictable cash flow.",
+    icon: "♻️",
+  },
+  womens_health: {
+    label: "Women's Health",
+    taxonomyQuery: "Obstetrics & Gynecology",
+    revenuePerProvider: 700000,
+    ebitdaMarginLow: 0.18,
+    ebitdaMarginHigh: 0.28,
+    multipleLow: 7,
+    multipleHigh: 11,
+    marketContext:
+      "Women's health services command premium multiples on a strong cash-pay component and fertility-adjacent demand growth — broad OB/GYN and women's-services platforms (distinct from single-service fertility clinics) are actively sought.",
+    icon: "🌸",
+  },
+  infusion: {
+    label: "Infusion",
+    taxonomyQuery: "Infusion*",
+    revenuePerProvider: 1800000,
+    ebitdaMarginLow: 0.16,
+    ebitdaMarginHigh: 0.26,
+    multipleLow: 8,
+    multipleHigh: 12,
+    marketContext:
+      "Community and ambulatory infusion benefits from the site-of-care shift away from hospital outpatient departments — high per-patient revenue, recurring chronic-care census, and payer cost-steering drive strong platform economics.",
+    icon: "💉",
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -284,12 +346,13 @@ function calculateScore(
 ): number {
   let score = 0;
 
-  // Age scoring
-  if (age >= 15) score += 30;
-  else if (age >= 10) score += 22;
-  else if (age >= 7) score += 15;
-  else if (age >= 5) score += 8;
-  else score += 3;
+  // Age scoring — early-stage preferred (growth runway, founder still operating)
+  if (age === 0) score += 12;        // unknown founding date — neutral
+  else if (age <= 3) score += 30;    // very early stage — top preference
+  else if (age <= 6) score += 24;
+  else if (age <= 10) score += 16;
+  else if (age <= 15) score += 10;
+  else score += 5;                   // long-established — lower fit for early-stage thesis
 
   // Specialty scoring
   if (HIGH_VALUE_SPECIALTIES.has(specialtyKey)) score += 25;
@@ -317,12 +380,14 @@ function generateThesis(
   benchmark: SpecialtyBenchmark,
 ): string {
   let s1: string;
-  if (age >= 15) {
+  if (age > 0 && age <= 4) {
+    s1 = `An early-stage practice (${age} yr${age !== 1 ? "s" : ""}) with significant growth runway — the kind of platform a flexible, well-capitalized partner can scale before it reaches full maturity.`;
+  } else if (age > 0 && age <= 10) {
+    s1 = `With ${age} years of operating history, this practice has proven unit economics while retaining meaningful growth runway ahead.`;
+  } else if (age > 15) {
     s1 = `A ${age}-year established practice with deeply entrenched community relationships and a patient base compounded over multiple care cycles.`;
-  } else if (age >= 8) {
-    s1 = `With ${age} years of operating history, this practice has demonstrated proven unit economics and durable patient demand.`;
   } else {
-    s1 = "Growth-stage practice with meaningful runway ahead in a consolidating vertical.";
+    s1 = "An established practice with a demonstrated operating track record in a consolidating vertical.";
   }
 
   let s2: string;
@@ -340,7 +405,9 @@ function generateThesis(
 }
 
 function generateApproachAngle(age: number, estimatedProviders: number, _specialty: string): string {
-  if (age >= 15) {
+  if (age > 0 && age <= 5) {
+    return "Early-stage practice — lead with growth capital and partnership: funding for new locations, providers, and back-office scale. Position as an accelerator that lets the founder keep operating and growing, not an exit.";
+  } else if (age >= 15) {
     return `Founder has operated for ${age} years — lead with succession planning and legacy preservation, not a sale. Open with: 'We partner with tenured physicians who want to ensure continuity for their patients and staff.'`;
   } else if (estimatedProviders === 1) {
     return "Solo practitioner — lead with operational relief: staffing, billing, compliance, and administrative burden. Frame partnership as joining a clinical network, not a transaction.";
@@ -358,10 +425,14 @@ function generateSignals(
 ): string[] {
   const signals: string[] = [];
 
-  if (age >= 15) {
-    signals.push(`🟡 ${age}-year operating history — high succession probability`);
+  if (age > 0 && age <= 4) {
+    signals.push(`🟢 Early-stage practice (${age} yr${age !== 1 ? "s" : ""}) — growth runway with founder still operating`);
+  } else if (age > 0 && age <= 8) {
+    signals.push(`🟢 ${age}-year practice — established but early, room to scale`);
+  } else if (age >= 15) {
+    signals.push(`🟡 ${age}-year operating history — succession / transition candidate`);
   } else if (age >= 10) {
-    signals.push(`🟡 ${age}-year practice — approaching founder transition window`);
+    signals.push(`🟡 ${age}-year practice — approaching transition window`);
   }
 
   if (estimatedProviders >= 2 && estimatedProviders <= 8) {
@@ -415,6 +486,23 @@ function buildProfilesFromResults(
 
     if (!rawName) continue;
 
+    // "Doing Business As" brand name — real NPI other_names data
+    const otherNames: unknown[] = (r.other_names as unknown[]) || [];
+    const dbaEntry = otherNames.find((o) => {
+      const on = o as Record<string, unknown>;
+      return String(on.type || "").toLowerCase().includes("doing business");
+    }) as Record<string, unknown> | undefined;
+    const dba = dbaEntry
+      ? String(dbaEntry.organization_name || dbaEntry.name || "").trim()
+      : "";
+
+    // Website — only if NPI carries a URL-type endpoint (almost always empty)
+    const endpoints: unknown[] = (r.endpoints as unknown[]) || [];
+    const website =
+      endpoints
+        .map((e) => String((e as Record<string, unknown>).endpoint || ""))
+        .find((s) => /^https?:\/\//i.test(s)) || "";
+
     const createdEpoch = r.created_epoch ? Number(r.created_epoch) : 0;
     const lastUpdatedEpoch = r.last_updated_epoch ? Number(r.last_updated_epoch) : 0;
 
@@ -434,6 +522,8 @@ function buildProfilesFromResults(
       foundingYear: createdEpoch > 0 ? new Date(createdEpoch * 1000).getFullYear() : 0,
       lastUpdated: lastUpdatedEpoch > 0 ? new Date(lastUpdatedEpoch * 1000).toISOString().slice(0, 10) : "",
       licenseState: String(taxonomy0.state || fallbackState || ""),
+      dba,
+      website,
     };
 
     const practiceAge = provider.foundingYear > 0 ? currentYear - provider.foundingYear : 0;
@@ -533,4 +623,49 @@ export async function searchHealthcareProviders(opts: {
   const profiles = buildProfilesFromResults(results, benchmark, opts.specialtyKey || "all", opts.state);
 
   return { total: resultCount, profiles };
+}
+
+// Search several states at once and aggregate. Used when more than one state
+// is selected (e.g. a focus vertical spanning NC / SC / MD / VA). Runs the
+// per-state queries in parallel, merges, dedupes by NPI, and re-sorts by score.
+export async function searchHealthcareProvidersMultiState(opts: {
+  specialtyKey: string;
+  states: string[];
+  city?: string;
+  limitPerState?: number;
+  entityType?: "NPI-1" | "NPI-2" | "all";
+  orgName?: string;
+  lastName?: string;
+}): Promise<{ total: number; profiles: PracticeProfile[] }> {
+  const limitPerState = opts.limitPerState || 20;
+
+  const results = await Promise.all(
+    opts.states.map((st) =>
+      searchHealthcareProviders({
+        specialtyKey: opts.specialtyKey,
+        state: st,
+        city: opts.city,
+        limit: limitPerState,
+        skip: 0,
+        entityType: opts.entityType,
+        orgName: opts.orgName,
+        lastName: opts.lastName,
+      }).catch(() => ({ total: 0, profiles: [] as PracticeProfile[] })),
+    ),
+  );
+
+  const total = results.reduce((sum, r) => sum + r.total, 0);
+
+  const seen = new Set<string>();
+  const profiles: PracticeProfile[] = [];
+  for (const r of results) {
+    for (const p of r.profiles) {
+      if (seen.has(p.provider.npi)) continue;
+      seen.add(p.provider.npi);
+      profiles.push(p);
+    }
+  }
+
+  profiles.sort((a, b) => b.acquisitionScore - a.acquisitionScore);
+  return { total, profiles };
 }
